@@ -1,0 +1,8 @@
+config:
+  aws:region: us-west-2
+  habitat.kenny.wtf:path: ../../_dist
+  habitat.kenny.wtf:zoneName: kenny.wtf
+  habitat.kenny.wtf:targetDomain: habitat.kenny.wtf
+  habitat.kenny.wtf:includeWWW: true
+  habitat.kenny.wtf:errorDocument: 404.html
+  habitat.kenny.wtf:indexDocument: index.html
