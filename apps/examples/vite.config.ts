@@ -14,9 +14,6 @@ export default defineConfig({
       "Cross-Origin-Embedder-Policy": "require-corp",
     },
   },
-  optimizeDeps: {
-    exclude: ["@hello-worlds/planets", "@hello-worlds/react", "h3-js"],
-  },
   build: {
     outDir: "../../_dist",
   },

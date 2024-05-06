@@ -1,10 +1,12 @@
 import { Canvas as R3fCanvas, useThree } from "@react-three/fiber"
 import React, { Suspense } from "react"
 import { Color } from "three"
+import { Post } from "./post/Post"
 
 const Background: React.FC = () => {
   useThree(state => {
-    state.scene.background = new Color("#3D4058")
+    // state.scene.background = new Color("#3D4058")
+    state.scene.background = new Color("black")
   })
   return null
 }
@@ -38,12 +40,13 @@ export const Canvas: React.FC<
           top: 0,
           left: 0,
           zIndex: 1,
-          background: "#3D4058",
+          background: "black",
         }
       }
     >
-      <Suspense fallback={null}>{children}</Suspense>
-      <Background />
+      <Suspense fallback={null}>
+        <Post>{children}</Post>
+      </Suspense>
     </R3fCanvas>
   )
 }

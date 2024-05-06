@@ -36,6 +36,7 @@ export default function Habitat() {
         worker={worker}
         data={data}
         inverted
+        skirtDepth={100}
       >
         <meshStandardMaterial vertexColors side={DoubleSide} />
         <directionalLight position={new Vector3()} intensity={2} />

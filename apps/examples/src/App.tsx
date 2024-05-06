@@ -1,9 +1,11 @@
 import React from "react"
-import { BrowserRouter } from "react-router-dom"
+import { BrowserRouter, Route, Routes } from "react-router-dom"
 
 import { Leva } from "leva"
+import { Canvas } from "./components/Canvas"
 import { Footer } from "./components/footer/Footer"
 import Home from "./pages/home/Home"
+import { ProgressUI, UI } from "./tunnel"
 
 interface IRoute {
   name: string
@@ -24,7 +26,28 @@ const App: React.FC = () => {
   return (
     <BrowserRouter>
       <Leva hidden={hidden} />
-      <h1>Hello World</h1>
+      <Routes>
+        {routes.map(route => (
+          <Route
+            path={route.path}
+            key={route.path}
+            element={
+              <>
+                <div id="ui">
+                  {/* Anything that goes into the tunnel, we want to render here. */}
+                  <UI.Out />
+                </div>
+                <div id="progress">
+                  <ProgressUI.Out />
+                </div>
+                <Canvas>
+                  <route.component />
+                </Canvas>
+              </>
+            }
+          />
+        ))}
+      </Routes>
       <Footer />
     </BrowserRouter>
   )
