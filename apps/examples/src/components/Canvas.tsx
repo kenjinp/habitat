@@ -43,7 +43,7 @@ export const Canvas: React.FC<
       camera={{
         near: 0.01,
         far: Number.MAX_SAFE_INTEGER,
-        // position: [19839050.701512888, 7850938.256831713, 6902138.053252276],
+        position: [971.6727012195914, -3427.8869171614824, -1710.466415466463],
       }}
       shadows="soft"
       shadow-camera-far={1000000}
