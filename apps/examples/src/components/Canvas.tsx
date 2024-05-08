@@ -1,5 +1,5 @@
 import { Canvas as R3fCanvas, useThree } from "@react-three/fiber"
-import React, { Suspense } from "react"
+import React, { Suspense, useEffect } from "react"
 import { Color } from "three"
 import { Post } from "./post/Post"
 
@@ -7,6 +7,23 @@ const Background: React.FC = () => {
   useThree(state => {
     // state.scene.background = new Color("#3D4058")
     state.scene.background = new Color("black")
+  })
+  return null
+}
+
+const CameraDebug: React.FC = () => {
+  const camera = useThree(state => state.camera)
+  useEffect(() => {
+    // when we press c, log the camera position
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "c") {
+        console.log(camera.position)
+      }
+    }
+    window.addEventListener("keydown", onKeyDown)
+    return () => {
+      window.removeEventListener("keydown", onKeyDown)
+    }
   })
   return null
 }
@@ -26,7 +43,7 @@ export const Canvas: React.FC<
       camera={{
         near: 0.01,
         far: Number.MAX_SAFE_INTEGER,
-        position: [-778.8166673411616, 5553.223843712609, 9614.949713806403],
+        // position: [19839050.701512888, 7850938.256831713, 6902138.053252276],
       }}
       shadows="soft"
       shadow-camera-far={1000000}
@@ -46,6 +63,7 @@ export const Canvas: React.FC<
     >
       <Suspense fallback={null}>
         <Post>{children}</Post>
+        <CameraDebug />
       </Suspense>
     </R3fCanvas>
   )

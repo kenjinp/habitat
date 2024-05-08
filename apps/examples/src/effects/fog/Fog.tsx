@@ -56,6 +56,8 @@ class FogEffect extends Effect {
 
     this.camera = camera
     this.directionalLight = directionalLight
+
+    console.log("initialized FogEffect :)")
   }
 
   update(

@@ -7,6 +7,7 @@ export default function Home() {
     <Scene>
       <Habitat />
       <OrbitControls />
+      {/* <FlyControls movementSpeed={10_000} rollSpeed={2} /> */}
     </Scene>
   )
 }

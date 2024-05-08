@@ -1,11 +1,13 @@
 import { RingWorld as HelloRingWorld } from "@hello-worlds/planets"
 import { RingWorld } from "@hello-worlds/react"
 import { useThree } from "@react-three/fiber"
-import { DoubleSide, Vector3 } from "three"
+import { BackSide, Vector3 } from "three"
 
 import { useMemo, useRef } from "react"
+import { Star } from "../star/Star"
 import { length, radius } from "./Habitat.dimensions"
 import Worker from "./Habitat.worker?worker"
+import Water from "./water/Water"
 
 const worker = () => new Worker()
 
@@ -24,24 +26,34 @@ export default function Habitat() {
   }, [])
 
   return (
-    <group>
+    <group
+    // rotate 90 degrees to align with the x-z plane
+    // rotation={[Math.PI / 2, 0, 0]}
+    >
       <RingWorld
         position={new Vector3()}
         length={length}
         ref={planet}
         radius={radius}
         minCellSize={64}
-        minCellResolution={64}
+        minCellResolution={128}
         lodOrigin={camera.position}
         worker={worker}
         data={data}
         inverted
-        skirtDepth={100}
+        skirtDepth={10}
       >
-        <meshStandardMaterial vertexColors side={DoubleSide} />
-        <directionalLight position={new Vector3()} intensity={2} />
-        <axesHelper args={[20_000]} />
+        <Star
+          position={new Vector3(0, 0, 0)}
+          radius={4}
+          color="white"
+          emissive="white"
+          lightIntensity={100_000}
+          name="sun"
+        />
+        <meshStandardMaterial vertexColors side={BackSide} />
       </RingWorld>
+      <Water />
     </group>
   )
 }
