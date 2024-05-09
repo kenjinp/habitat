@@ -35,7 +35,7 @@ export default function Water() {
         worker={worker}
         data={data}
         inverted
-        skirtDepth={0.000001}
+        skirtDepth={0.000000000000001}
       >
         <meshStandardMaterial transparent opacity={0.9} color={new Color(0x017B92)} side={BackSide} />
       </RingWorld>

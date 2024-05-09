@@ -30,7 +30,7 @@ export const Star = React.forwardRef<Mesh, StarProps>((props, ref) => {
       <pointLight
         color={emissive}
         intensity={lightIntensity}
-        decay={1.2}
+        decay={1}
         castShadow
         name={`${name}-light`}
       />
