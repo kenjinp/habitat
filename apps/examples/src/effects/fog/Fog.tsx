@@ -26,6 +26,8 @@ class FogEffect extends Effect {
   camera: Camera
   directionalLight: DirectionalLight
   constructor({ camera, directionalLight }: FogEffectProps) {
+
+    console.log({ camera, directionalLight })
     // camera gets added after construction in effect-composer
     if (camera) {
       camera.getWorldPosition(_position)
@@ -39,10 +41,10 @@ class FogEffect extends Effect {
         ["uViewMatrixInverse", new Uniform(_matrixWorld)],
         ["uProjectionMatrixInverse", new Uniform(_projectionMatrixInverse)],
         ["uDirectionalLightShadow", new Uniform(directionalLight.shadow)],
-        [
-          "uDirectionalShadowMap",
-          new Uniform(directionalLight.shadow.map.texture),
-        ],
+        // [
+        //   "uDirectionalShadowMap",
+        //   new Uniform(directionalLight.shadow.map.texture),
+        // ],
         [
           "uDirectionalShadowMatrix",
           new Uniform(directionalLight.shadow.matrix),
@@ -65,6 +67,7 @@ class FogEffect extends Effect {
     _renderTarget: WebGLRenderTarget,
     deltaTime: number,
   ) {
+    console.log("update")
     this.camera.getWorldPosition(_position)
     this.camera.getWorldDirection(_cameraDirection)
     this.uniforms.get("uCameraWorldDirection")!.value = _cameraDirection
@@ -72,8 +75,8 @@ class FogEffect extends Effect {
     this.uniforms.get("uTime")!.value += deltaTime
     this.uniforms.get("uViewMatrixInverse")!.value = this.camera?.matrixWorld
     this.uniforms.get("uSunPosition")!.value = this.directionalLight.position
-    this.uniforms.get("uDirectionalLightShadow")!.value =
-      this.directionalLight.shadow
+    // this.uniforms.get("uDirectionalLightShadow")!.value =
+    //   this.directionalLight.shadow
     this.uniforms.get("uProjectionMatrixInverse")!.value =
       this.camera?.projectionMatrixInverse
   }

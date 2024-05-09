@@ -113,6 +113,29 @@ vec2 boxIntersection( in vec3 ro, in vec3 rd, vec3 boxSize)
     return vec2( tN, tF );
 }
 
+vec2 cylinderIntersection( in vec3 ro, in vec3 rd, float radius, float height) 
+{
+    vec2 t = vec2(-1.0);
+    vec3 oc = ro;
+    float a = dot(rd.xz, rd.xz);
+    float b = 2.0 * dot(oc.xz, rd.xz);
+    float c = dot(oc.xz, oc.xz) - radius * radius;
+    float discriminant = b * b - 4.0 * a * c;
+    if (discriminant > 0.0) {
+        float t0 = (-b - sqrt(discriminant)) / (2.0 * a);
+        float t1 = (-b + sqrt(discriminant)) / (2.0 * a);
+        vec3 p0 = ro + rd * t0;
+        vec3 p1 = ro + rd * t1;
+        if (p0.y > 0.0 && p0.y < height) {
+            t.x = t0;
+        }
+        if (p1.y > 0.0 && p1.y < height) {
+            t.y = t1;
+        }
+    }
+    return t;
+}
+
 
 float remap( in float value, in float x1, in float y1, in float x2, in float y2) {
   return ((value - x1) * (y2 - x2)) / (y1 - x1) + x2;
@@ -146,7 +169,7 @@ vec4 rayMarch(in Ray ray, in vec3 box, in vec3 boxPosition, in float maxDistance
     
     float sun_phase = HG_phase(sun.direction, ray.direction, SUN_SCATTERING_ANISO)*3.0;
     // float signedDistance = sdBox(Translate( currentPosition, boxPosition), box);
-    vec2 intersection = boxIntersection(Translate( ray.origin, boxPosition), ray.direction, box);
+    vec2 intersection = cylinderIntersection(Translate( ray.origin, boxPosition), ray.direction, 5000.0 / 2.0, 15000.0);
     float intersectionNear = intersection.x;
     float intersectionFar = intersection.y;
     bool objectInFront = maxDistance < intersectionNear;
@@ -231,7 +254,7 @@ vec4 rayMarch(in Ray ray, in vec3 box, in vec3 boxPosition, in float maxDistance
       opt_i += density;
 
       // get light ray stuff
-      vec2 lightRayIntersection = boxIntersection(Translate( currentPosition, boxPosition), sun.direction, box);
+      vec2 lightRayIntersection = cylinderIntersection(Translate( currentPosition, boxPosition), sun.direction, 5000.0, 15000.0);
       float lightRayIntersectionNear = intersection.x;
       float lightRayIntersectionFar = intersection.y;
       bool objectInFront = maxDistance < intersectionNear;
@@ -350,6 +373,7 @@ vec4 rayMarch(in Ray ray, in vec3 box, in vec3 boxPosition, in float maxDistance
 }
 
 void mainImage(const in vec4 inputColor, const in vec2 uv, const in float depth, out vec4 outputColor) {
+  vec4 sceneColor = inputColor;
   float depthValue = getViewZ(depth);
   float d = readDepth(texture2D(depthBuffer, uv).x);
   float v_depth = pow(2.0, d / (A_logDepthBufFC() * 0.5));
@@ -366,7 +390,26 @@ void mainImage(const in vec4 inputColor, const in vec2 uv, const in float depth,
 
   Ray ray = Ray(rayOrigin, rayDirection);
 
-  vec4 color = rayMarch(ray, vec3(5000., 5000., 5000.) - vec3(1.0), vec3(0.0, 4700.0, 0.0), sceneDepth, inputColor.xyz);
+  // vec4 color = rayMarch(ray, vec3(5000., 5000., 5000.) - vec3(1.0), vec3(0.0, 4700.0, 0.0), sceneDepth, inputColor.xyz);
 
-  outputColor = vec4(color.xyz, 1.0);
+  // outputColor = vec4(color.xyz, 1.0);
+
+  // float signedDistance = sdBox(Translate( currentPosition, boxPosition), box);
+    vec2 intersection = cylinderIntersection(Translate( ray.origin, vec3(0.0,  -15000.0 / 2.0, 0.0)), ray.direction, 5000.0 / 2.0, 15000.0);
+    float intersectionNear = intersection.x;
+    float intersectionFar = intersection.y;
+    bool objectInFront = sceneDepth < intersectionNear;
+
+
+    // no intersection
+    if (intersection == vec2(-1.0)) {
+     sceneColor = vec4(inputColor.xyz, 1.0);
+    }
+    // terrain or other mesh in front of the sdf box
+    else if (objectInFront) {
+      sceneColor =  vec4(inputColor.xyz, 1.0);
+    } else {
+sceneColor = vec4(vec3(1.0, 0.0, 0.0), 1.0);
+    }
+  outputColor = sceneColor;
 }

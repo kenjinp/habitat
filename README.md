@@ -1,5 +1,6 @@
 # Habitat
 
-Let's implement an O'Neill cylinder space habitat
+A vignette of an O'Neill orbital habitat using
+[@hello-worlds/react](https://github.com/kenjinp/hello-worlds)
 
 <img src="example.png">

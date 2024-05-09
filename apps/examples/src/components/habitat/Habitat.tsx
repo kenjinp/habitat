@@ -4,9 +4,9 @@ import { useThree } from "@react-three/fiber"
 import { BackSide, Vector3 } from "three"
 
 import { useMemo, useRef } from "react"
-import { Star } from "../star/Star"
 import { length, radius } from "./Habitat.dimensions"
 import Worker from "./Habitat.worker?worker"
+import { Helion } from "./helion/Helion"
 import Water from "./water/Water"
 
 const worker = () => new Worker()
@@ -43,14 +43,7 @@ export default function Habitat() {
         inverted
         skirtDepth={10}
       >
-        <Star
-          position={new Vector3(0, 0, 0)}
-          radius={4}
-          color="white"
-          emissive="white"
-          lightIntensity={100_000}
-          name="sun"
-        />
+        <Helion />
         <meshStandardMaterial vertexColors side={BackSide} />
       </RingWorld>
       <Water />
