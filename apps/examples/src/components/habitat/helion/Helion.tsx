@@ -9,7 +9,7 @@ import { length } from '../Habitat.dimensions'
 import { colorSpline } from './Helion.spline'
 import { useFrame } from '@react-three/fiber'
 
-export const Helion: React.FC<> = () => {
+export const Helion: React.FC = () => {
   const meshRef = React.useRef()
   const [time, setTime] = React.useState(0)
   const [position] = React.useState(new Vector3(0, 0, 0)) 
