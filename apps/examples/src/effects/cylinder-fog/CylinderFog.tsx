@@ -2,8 +2,8 @@ import { wrapEffect } from "@react-three/postprocessing"
 import { Effect, EffectAttribute, WebGLExtension } from "postprocessing"
 import {
   Camera,
-  DirectionalLight,
   Matrix4,
+  PointLight,
   Uniform,
   Vector3,
   WebGLRenderTarget,
@@ -13,7 +13,7 @@ import fragment from "./Fog.glsl"
 
 export interface FogEffectProps {
   camera: Camera
-  directionalLight: DirectionalLight
+  pointLight: PointLight
 }
 
 // tempValues
@@ -22,12 +22,11 @@ const _position = new Vector3()
 const _matrixWorld = new Matrix4()
 const _projectionMatrixInverse = new Matrix4()
 
-class FogEffect extends Effect {
+class CylinderFogEffect extends Effect {
   camera: Camera
-  directionalLight: DirectionalLight
-  constructor({ camera, directionalLight }: FogEffectProps) {
-
-    console.log({ camera, directionalLight })
+  pointLight: PointLight
+  constructor({ camera, pointLight }: FogEffectProps) {
+    console.log({ camera, pointLight })
     // camera gets added after construction in effect-composer
     if (camera) {
       camera.getWorldPosition(_position)
@@ -40,16 +39,13 @@ class FogEffect extends Effect {
         ["uCameraWorldDirection", new Uniform(_cameraDirection)],
         ["uViewMatrixInverse", new Uniform(_matrixWorld)],
         ["uProjectionMatrixInverse", new Uniform(_projectionMatrixInverse)],
-        ["uDirectionalLightShadow", new Uniform(directionalLight.shadow)],
+        ["uPointLightShadow", new Uniform(pointLight.shadow)],
         // [
         //   "uDirectionalShadowMap",
         //   new Uniform(directionalLight.shadow.map.texture),
         // ],
-        [
-          "uDirectionalShadowMatrix",
-          new Uniform(directionalLight.shadow.matrix),
-        ],
-        ["uSunPosition", new Uniform(directionalLight.position)],
+        ["uDirectionalShadowMatrix", new Uniform(pointLight.shadow.matrix)],
+        ["uSunPosition", new Uniform(pointLight.position)],
         ["uTime", new Uniform(0)],
       ]),
       attributes: EffectAttribute.DEPTH,
@@ -57,9 +53,7 @@ class FogEffect extends Effect {
     })
 
     this.camera = camera
-    this.directionalLight = directionalLight
-
-    console.log("initialized FogEffect :)")
+    this.pointLight = pointLight
   }
 
   update(
@@ -67,14 +61,13 @@ class FogEffect extends Effect {
     _renderTarget: WebGLRenderTarget,
     deltaTime: number,
   ) {
-    console.log("update")
     this.camera.getWorldPosition(_position)
     this.camera.getWorldDirection(_cameraDirection)
     this.uniforms.get("uCameraWorldDirection")!.value = _cameraDirection
     this.uniforms.get("uCameraPosition")!.value = _position
     this.uniforms.get("uTime")!.value += deltaTime
     this.uniforms.get("uViewMatrixInverse")!.value = this.camera?.matrixWorld
-    this.uniforms.get("uSunPosition")!.value = this.directionalLight.position
+    this.uniforms.get("uSunPosition")!.value = this.pointLight.position
     // this.uniforms.get("uDirectionalLightShadow")!.value =
     //   this.directionalLight.shadow
     this.uniforms.get("uProjectionMatrixInverse")!.value =
@@ -82,4 +75,4 @@ class FogEffect extends Effect {
   }
 }
 
-export const Fog = wrapEffect(FogEffect)
+export const CylinderFog = wrapEffect(CylinderFogEffect)

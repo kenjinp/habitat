@@ -21,6 +21,7 @@ uniform vec3 uSunPosition;
 
 
 #include "./Noise.glsl";
+#include "./Cylinder.glsl";
 
 // https://github.com/mrdoob/three.js/blob/fe312e19c2d8fa4219d035f0b83bc13a46fb1927/src/renderers/shaders/ShaderChunk/packing.glsl.js#L24
 
@@ -76,7 +77,17 @@ struct DirectionalLightShadow {
   vec2 mapSize;
 };
 
+struct PointLightShadow {
+  float shadowBias;
+  float shadowNormalBias;
+  float shadowRadius;
+  vec2 shadowMapSize;
+  float shadowCameraNear;
+  float shadowCameraFar;
+};
+
 uniform DirectionalLightShadow uDirectionalLightShadow;
+uniform PointLightShadow uPointLightShadow;
 
 // Henyey-Greenstein phase function
 float HG_phase(in vec3 L, in vec3 V, in float aniso)
@@ -88,9 +99,6 @@ float HG_phase(in vec3 L, in vec3 V, in float aniso)
 
 vec3 get_sun_direction(in vec3 pos)
 {
-    float angle = 1.9;
-    // Hardcoded to match sun in three.js
-    // should pass this from the tsx component
     vec3 dir = vec3(pos - uSunPosition);
     dir = normalize(dir);
     
@@ -100,41 +108,27 @@ vec3 get_sun_direction(in vec3 pos)
 	// vec3 shadowWorldNormal = inverseTransformDirection( transformedNormal, viewMatrix );
 	// vec4 shadowWorldPosition;
 
-vec2 boxIntersection( in vec3 ro, in vec3 rd, vec3 boxSize) 
-{
-    vec3 m = 1.0/rd; // can precompute if traversing a set of aligned boxes
-    vec3 n = m*ro;   // can precompute if traversing a set of aligned boxes
-    vec3 k = abs(m)*boxSize;
-    vec3 t1 = -n - k;
-    vec3 t2 = -n + k;
-    float tN = max( max( t1.x, t1.y ), t1.z );
-    float tF = min( min( t2.x, t2.y ), t2.z );
-    if( tN>tF || tF<0.0) return vec2(-1.0); // no intersection
-    return vec2( tN, tF );
-}
-
-vec2 cylinderIntersection( in vec3 ro, in vec3 rd, float radius, float height) 
+vec2 cylinderIntersectionWithEndCaps( in vec3 ro, in vec3 rd, in float radius, in float height )
 {
     vec2 t = vec2(-1.0);
     vec3 oc = ro;
-    float a = dot(rd.xz, rd.xz);
-    float b = 2.0 * dot(oc.xz, rd.xz);
-    float c = dot(oc.xz, oc.xz) - radius * radius;
-    float discriminant = b * b - 4.0 * a * c;
-    if (discriminant > 0.0) {
-        float t0 = (-b - sqrt(discriminant)) / (2.0 * a);
-        float t1 = (-b + sqrt(discriminant)) / (2.0 * a);
-        vec3 p0 = ro + rd * t0;
-        vec3 p1 = ro + rd * t1;
-        if (p0.y > 0.0 && p0.y < height) {
-            t.x = t0;
-        }
-        if (p1.y > 0.0 && p1.y < height) {
-            t.y = t1;
-        }
+    float a = dot(rd.xz,rd.xz);
+    float b = 2.0*dot(oc.xz,rd.xz);
+    float c = dot(oc.xz,oc.xz) - radius*radius;
+    float d = b*b - 4.0*a*c;
+    if( d>0.0 )
+    {
+        d = sqrt(d);
+        float t1 = (-b-d)/(2.0*a);
+        float t2 = (-b+d)/(2.0*a);
+        vec3 p1 = ro + rd*t1;
+        vec3 p2 = ro + rd*t2;
+        if( p1.y>0.0 && p1.y<height ) t = vec2(t1,t2);
+        if( p2.y>0.0 && p2.y<height ) t = vec2(t2,t1);
     }
     return t;
 }
+
 
 
 float remap( in float value, in float x1, in float y1, in float x2, in float y2) {
@@ -156,8 +150,7 @@ float easeInExpo(in float x) {
 //     Ray end;
 // };
 
-
-vec4 rayMarch(in Ray ray, in vec3 box, in vec3 boxPosition, in float maxDistance, in vec3 scene_color) {
+vec4 rayMarch(in Ray ray, in vec3 boxPosition, in float maxDistance, in vec3 scene_color) {
    
     // light stuff
     // light_color = SUN_COLOR;
@@ -169,7 +162,7 @@ vec4 rayMarch(in Ray ray, in vec3 box, in vec3 boxPosition, in float maxDistance
     
     float sun_phase = HG_phase(sun.direction, ray.direction, SUN_SCATTERING_ANISO)*3.0;
     // float signedDistance = sdBox(Translate( currentPosition, boxPosition), box);
-    vec2 intersection = cylinderIntersection(Translate( ray.origin, boxPosition), ray.direction, 5000.0 / 2.0, 15000.0);
+    vec2 intersection = cylinderIntersectionWithEndCaps(Translate( ray.origin, boxPosition), ray.direction, 5000.0 / 2.0, 15000.0);
     float intersectionNear = intersection.x;
     float intersectionFar = intersection.y;
     bool objectInFront = maxDistance < intersectionNear;
@@ -230,14 +223,18 @@ vec4 rayMarch(in Ray ray, in vec3 box, in vec3 boxPosition, in float maxDistance
       float phase_ray = 3.0 / (50.2654824574 /* (16 * pi) */) * (1.0 + mumu);
       float phase_mie = allow_mie ? 3.0 / (25.1327412287 /* (8 * pi) */) * ((1.0 - gg) * (mumu + 1.0)) / (pow(1.0 + gg - 2.0 * mu * g, 1.5) * (2.0 + gg)) : 0.0;
 
-
+      // Get height from inside surface of cylinder
+      // float insideCylinderHeight = 
 
 // Offsetting the position used for querying occlusion along the world normal can be used to reduce shadow acne.
     vec3 shadowWorldNormal = inverseTransformDirection(sun.direction, viewMatrix );
 
     for(int i = 0; i < MAX_STEPS; ++i) {
       vec3 currentPosition = begin.origin + ray.direction * (stepSize * float(i));
-      float height = currentPosition.y;
+
+      float height = length(currentPosition - vec3(0.0, currentPosition.y, 0.0));
+      // // float height = currentPosition.y;
+      float height_factor = clamp(remap(height, 0.0, 5000.0, 0.0, 1.0), 0.0, 1.0);
 
       // now calculate the density of the particles (both for rayleigh and mie)
       vec3 density = vec3(exp(-height / scale_height), 0.0);
@@ -254,7 +251,7 @@ vec4 rayMarch(in Ray ray, in vec3 box, in vec3 boxPosition, in float maxDistance
       opt_i += density;
 
       // get light ray stuff
-      vec2 lightRayIntersection = cylinderIntersection(Translate( currentPosition, boxPosition), sun.direction, 5000.0, 15000.0);
+      vec2 lightRayIntersection = intersectRayCylinder(Translate( currentPosition, boxPosition), sun.direction, 5000.0, 15000.0);
       float lightRayIntersectionNear = intersection.x;
       float lightRayIntersectionFar = intersection.y;
       bool objectInFront = maxDistance < intersectionNear;
@@ -372,6 +369,87 @@ vec4 rayMarch(in Ray ray, in vec3 box, in vec3 boxPosition, in float maxDistance
     return vec4(accum, 1.0);
 }
 
+vec4 badRayMarch(in Ray ray, in vec3 boxPosition, in float maxDistance, in vec3 scene_color) {
+    float distanceTraveled = 0.0;
+    vec3 color = vec3(0.0, 0.0, 0.0);
+    vec3 sunDir = get_sun_direction(ray.origin);
+    vec3 accum = scene_color;
+    
+    float sun_phase = HG_phase(sunDir, ray.direction, SUN_SCATTERING_ANISO)*3.0;
+    vec2 intersection = intersectRayCylinder(Translate( ray.origin, boxPosition), ray.direction, 5000.0 / 2.0, 15000.0);
+    // intersection.x = remap(intersection.x, 0., 20000., 0., 1.);
+    // intersection.y = remap(intersection.y, 0., 20000., 0., 1.);
+    // return vec4(intersection, 1.0, 1.0);
+    // vec4 intersection_before = cylIntersect(Translate( ray.origin, boxPosition), ray.direction, vec3(0.0, 15000.0 / 2.0, 0.), vec3(0.0, -15000.0 / 2.0, 0.0), 5000.0 / 2.0);
+    // vec2 intersection = vec2(intersection_before.x, intersection_before.y);
+    float intersectionNear = intersection.x;
+    float intersectionFar = intersection.y;
+    // no intersection
+    if (intersection == vec2(-1.0)) return vec4(accum, 1.0);
+    // terrain or other mesh in front of the sdf box
+    if (maxDistance < intersectionNear) return vec4(accum, 1.0);
+
+    Ray begin = Ray(ray.origin + ray.direction * intersectionNear, ray.direction);
+    // if we're inside the box, start at the input ray origin
+    if (intersectionNear <= 0.0) {
+      begin = Ray(ray.origin, ray.direction);
+    }
+    Ray end = Ray(ray.origin + ray.direction * min(intersectionFar, maxDistance), ray.direction);
+
+    float intersectionDistance = length(end.origin - begin.origin);
+    float distancePerStep = intersectionDistance / float(MAX_STEPS);
+
+    float fog = 0.0002 / float(MAX_STEPS);
+
+// Offsetting the position used for querying occlusion along the world normal can be used to reduce shadow acne.
+    // vec3 shadowWorldNormal = inverseTransformDirection(sunDir, viewMatrix );
+
+    for(int i = 0; i < MAX_STEPS; ++i) {
+
+      // get elevation from cylinder walls
+
+      vec3 currentPosition = begin.origin + ray.direction * (distancePerStep * float(i));
+      float height = length(currentPosition - vec3(0.0, currentPosition.y, 0.0));
+      
+      // // float height = currentPosition.y;
+      float height_factor = clamp(remap(height, 0.0, 5000.0, 0.0, 1.0), 0.0, 1.0);
+      // height_factor = easeInExpo(height_factor);
+      // height_factor = 0.3;
+
+      // // shadow stuff
+      // vec4 shadowWorldPosition = vec4(currentPosition, 1.0) + vec4( shadowWorldNormal * uDirectionalLightShadow.normalBias, 0. ); //+ vec4(offset, 0.); // <-- see offset
+      // vec4 directionalShadowCoord = uDirectionalShadowMatrix * shadowWorldPosition;
+
+      // // vec4 shadowCoord = uDirectionalShadowMatrix * vec4(currentPosition, 1.0);
+      // directionalShadowCoord.xyz /= directionalShadowCoord.w;
+
+      // float shadowDepth = texture(uDirectionalShadowMap, directionalShadowCoord.xy).r;
+      // // shadowDepth = unpackRGBAToDepth( texture2D( uDirectionalShadowMap, shadowCoord.xy ) );
+      // shadowDepth = unpackRGBAToDepth( texture2D( uDirectionalShadowMap, directionalShadowCoord.xy ) );
+
+      float dianceToSun = length(uSunPosition - currentPosition);
+
+      // only accumulate if we're in the atmosphere
+  
+      vec3 sky = SKY_COLOR * (height_factor * 0.2) * distancePerStep;
+      vec3 sun = SUN_COLOR * sun_phase * (height_factor * 0.5 )  * distancePerStep;
+      
+      accum += sky * fog;
+      accum += sun * fog;
+
+    //             Point is in shadow
+    //     if (shadowDepth < directionalShadowCoord.z) {
+    //         // accum += SHADOW_COLOR * vec3(shadowDepth);
+    //     } else {
+    //         accum += sky * fog;
+    //         accum += sun * fog;
+    //     }
+    //   accum += SHADOW_COLOR * vec3(shadowDepth);
+    }
+
+    return vec4(accum, 1.0);
+}
+
 void mainImage(const in vec4 inputColor, const in vec2 uv, const in float depth, out vec4 outputColor) {
   vec4 sceneColor = inputColor;
   float depthValue = getViewZ(depth);
@@ -390,26 +468,8 @@ void mainImage(const in vec4 inputColor, const in vec2 uv, const in float depth,
 
   Ray ray = Ray(rayOrigin, rayDirection);
 
-  // vec4 color = rayMarch(ray, vec3(5000., 5000., 5000.) - vec3(1.0), vec3(0.0, 4700.0, 0.0), sceneDepth, inputColor.xyz);
+  vec4 color = badRayMarch(ray, vec3(0.0, -15000.0/2.0, 0.0), sceneDepth, inputColor.xyz);
+  // vec4 color = rayMarch(ray, vec3(0.0, -15000.0/2.0, 0.0), sceneDepth, inputColor.xyz);
 
-  // outputColor = vec4(color.xyz, 1.0);
-
-  // float signedDistance = sdBox(Translate( currentPosition, boxPosition), box);
-    vec2 intersection = cylinderIntersection(Translate( ray.origin, vec3(0.0,  -15000.0 / 2.0, 0.0)), ray.direction, 5000.0 / 2.0, 15000.0);
-    float intersectionNear = intersection.x;
-    float intersectionFar = intersection.y;
-    bool objectInFront = sceneDepth < intersectionNear;
-
-
-    // no intersection
-    if (intersection == vec2(-1.0)) {
-     sceneColor = vec4(inputColor.xyz, 1.0);
-    }
-    // terrain or other mesh in front of the sdf box
-    else if (objectInFront) {
-      sceneColor =  vec4(inputColor.xyz, 1.0);
-    } else {
-sceneColor = vec4(vec3(1.0, 0.0, 0.0), 1.0);
-    }
-  outputColor = sceneColor;
+  outputColor = vec4(color.xyz, 1.0);
 }

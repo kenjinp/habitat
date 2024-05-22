@@ -1,7 +1,7 @@
 import { RingWorld as HelloRingWorld } from "@hello-worlds/planets"
 import { RingWorld } from "@hello-worlds/react"
 import { useFrame, useThree } from "@react-three/fiber"
-import { BackSide, Group, Vector3 } from "three"
+import { DoubleSide, Group, MathUtils, Vector3 } from "three"
 
 import { useMemo, useRef } from "react"
 import { length, radius } from "./Habitat.dimensions"
@@ -13,6 +13,34 @@ const worker = () => new Worker()
 
 export interface HabitatData {
   seed: string
+}
+
+const RandomCubesInsideCylinder: React.FC<{ numCubes: number }> = ({
+  numCubes,
+}) => {
+  return (
+    <group>
+      {Array.from({ length: numCubes }).map((_, i) => {
+        const scale = MathUtils.randFloatSpread(200)
+        const x = MathUtils.randFloatSpread(radius)
+        const y = MathUtils.randFloatSpread(length)
+        const z = MathUtils.randFloatSpread(radius)
+        const rotation = Math.random() * Math.PI
+        return (
+          <mesh
+            castShadow
+            key={i}
+            position={[x, y, z]}
+            scale={[scale, scale, scale]}
+            rotation={[0, rotation, 0]}
+          >
+            <boxGeometry args={[1, 1, 1]} />
+            <meshStandardMaterial color="red" />
+          </mesh>
+        )
+      })}
+    </group>
+  )
 }
 
 export default function Habitat() {
@@ -38,8 +66,8 @@ export default function Habitat() {
     const targetGravity = 0.8
 
     // rotate the ringWorld
-    habitatGroup.current!.rotation.y +=
-      rotationsPerSecond(radius, targetGravity) * (delta * 100)
+    // habitatGroup.current!.rotation.y +=
+    //   rotationsPerSecond(radius, targetGravity) * (delta * 100)
   })
 
   return (
@@ -47,6 +75,7 @@ export default function Habitat() {
       ref={habitatGroup}
       // rotate 90 degrees to align with the x-z plane
       // rotation={[Math.PI / 2, 0, 0]}
+      receiveShadow
     >
       <RingWorld
         position={new Vector3()}
@@ -62,7 +91,8 @@ export default function Habitat() {
         skirtDepth={10}
       >
         <Helion />
-        <meshStandardMaterial vertexColors side={BackSide} />
+        <RandomCubesInsideCylinder numCubes={500} />
+        <meshStandardMaterial vertexColors side={DoubleSide} />
       </RingWorld>
       <Water />
     </group>

@@ -1,10 +1,9 @@
-import { SUN_RADIUS, remap } from "@hello-worlds/planets"
+import { SUN_RADIUS } from "@hello-worlds/planets"
 import { useThree } from "@react-three/fiber"
-import * as React from "react"
-import { DirectionalLight, MathUtils, Mesh, PerspectiveCamera, PointLight } from "three"
-import { Fog } from "../../effects/fog/Fog"
 import { EffectComposer } from "@react-three/postprocessing"
-import { useEffect } from "react"
+import * as React from "react"
+import { Mesh, PointLight } from "three"
+import { CylinderFog } from "../../effects/cylinder-fog/CylinderFog"
 
 export interface StarProps {
   position: [number, number, number]
@@ -24,19 +23,36 @@ export const Star = React.forwardRef<Mesh, StarProps>((props, ref) => {
     lightIntensity,
     name,
   } = props
+  const camera = useThree(state => state.camera)
+  const [light, setLight] = React.useState<PointLight | null>(null)
 
+  React.useEffect(() => {
+    if (light) {
+      light.shadow.mapSize.width = 512 // default
+      light.shadow.mapSize.height = 512 // default
+      light.shadow.camera.near = 0.0 // default
+      light.shadow.camera.far = 1_000_000 // default
+      light.shadow.camera.fov = 45 // default
+    }
+  }, [light])
+
+  console.log(light)
   return (
     <mesh ref={ref} position={position}>
       <pointLight
+        ref={light => {
+          setLight(light)
+        }}
         color={emissive}
         intensity={lightIntensity}
         decay={1}
         castShadow
         name={`${name}-light`}
       />
-      {/* <EffectComposer>
-        {light && <Fog camera={camera} directionalLight={light} /> }
-      </EffectComposer> */}
+      <EffectComposer>
+        {light && <CylinderFog camera={camera} pointLight={light} />}
+      </EffectComposer>
+      {light && <cameraHelper args={[light.shadow.camera]} />}
       <sphereGeometry args={[radius, 32, 16]}></sphereGeometry>
       <meshStandardMaterial
         color={color}

@@ -1,7 +1,4 @@
 import { useThree } from "@react-three/fiber"
-import { Bloom, EffectComposer, Noise, Vignette } from "@react-three/postprocessing"
-import { Fog } from "../../effects/fog/Fog"
-import { useSun } from "../../hooks/use-sun"
 
 export const Post: React.FC<React.PropsWithChildren> = ({ children }) => {
   const gl = useThree(state => state.gl)
@@ -18,7 +15,6 @@ export const Post: React.FC<React.PropsWithChildren> = ({ children }) => {
       </EffectComposer> 
       */}
       {children}
-
     </>
   ) : null
 }
