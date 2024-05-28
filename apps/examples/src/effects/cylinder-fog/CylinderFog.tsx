@@ -1,6 +1,6 @@
 import { wrapEffect } from "@react-three/postprocessing"
 import { Effect, EffectAttribute, WebGLExtension } from "postprocessing"
-import React, { useEffect } from "react"
+import React, { useLayoutEffect } from "react"
 import {
   Camera,
   MathUtils,
@@ -95,9 +95,9 @@ class CylinderFogEffect extends Effect {
 
 const usePollForShadowMap = (pointLight: PointLight) => {
   const [shadowMap, setShadowMap] = React.useState<Texture | null>(null)
-  useEffect(() => {
+  useLayoutEffect(() => {
     const interval = setInterval(() => {
-      if (pointLight?.shadow?.map?.texture) {
+      if (pointLight?.shadow?.map?.texture && !shadowMap) {
         setShadowMap(pointLight.shadow.map?.texture)
         clearInterval(interval)
       }

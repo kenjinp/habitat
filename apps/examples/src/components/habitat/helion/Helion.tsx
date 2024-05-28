@@ -19,7 +19,7 @@ export const Helion: React.FC = () => {
   const [position] = React.useState(new Vector3(0, 0, 0))
   const { dayFraction, dayOfYear, latitude, longitude } = useControls({
     dayFraction: {
-      value: 50,
+      value: 80,
       min: 0,
       max: 100,
       step: 1,
@@ -81,6 +81,15 @@ export const Helion: React.FC = () => {
       half,
     )
   }
+
+  // TODO: fix bug and remove this
+  React.useEffect(() => {
+    // set interval to rerender in 100 ms
+    const interval = setInterval(() => {
+      setTime(time + 1)
+    }, 100)
+    return () => clearInterval(interval)
+  }, [])
 
   useFrame(({ clock }) => {
     if (!meshRef.current) return

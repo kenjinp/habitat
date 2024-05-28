@@ -1,9 +1,9 @@
 import { RingWorld as HelloRingWorld } from "@hello-worlds/planets"
 import { RingWorld } from "@hello-worlds/react"
 import { useFrame, useThree } from "@react-three/fiber"
-import { BackSide, Group, MathUtils, Vector3 } from "three"
+import { BackSide, Group, MathUtils, Mesh, Vector3 } from "three"
 
-import { useMemo, useRef } from "react"
+import { useMemo, useRef, useState } from "react"
 import { length, radius } from "./Habitat.dimensions"
 import Worker from "./Habitat.worker?worker"
 import { Helion } from "./helion/Helion"
@@ -15,30 +15,47 @@ export interface HabitatData {
   seed: string
 }
 
-const RandomCubesInsideCylinder: React.FC<{ numCubes: number }> = ({
-  numCubes,
+const SingleRandomCube: React.FC<{ size: number; position: Vector3 }> = ({
+  size,
+  position,
 }) => {
+  const [randomSpeed] = useState(MathUtils.randFloat(0.001, 0.006))
+  const scale = MathUtils.randFloatSpread(size)
+  const meshRef = useRef<Mesh>(null)
+  useFrame(() => {
+    if (meshRef.current) {
+      meshRef.current.rotation.x += randomSpeed
+      meshRef.current.rotation.y += randomSpeed
+    }
+  })
+
+  return (
+    <mesh
+      ref={meshRef}
+      position={position}
+      scale={[scale, scale, scale]}
+      castShadow
+      receiveShadow
+    >
+      <boxGeometry args={[1, 1, 1]} />
+      <meshStandardMaterial color="red" />
+    </mesh>
+  )
+}
+
+const RandomCubesInsideCylinder: React.FC<{
+  numCubes: number
+  size: number
+}> = ({ numCubes, size }) => {
   return (
     <group>
       {Array.from({ length: numCubes }).map((_, i) => {
-        const scale = MathUtils.randFloatSpread(500)
-        const x = MathUtils.randFloatSpread(radius)
-        const y = MathUtils.randFloatSpread(length)
-        const z = MathUtils.randFloatSpread(radius)
-        const rotation = Math.random() * Math.PI
-        return (
-          <mesh
-            castShadow
-            receiveShadow
-            key={i}
-            position={[x, y, z]}
-            scale={[scale, scale, scale]}
-            rotation={[0, rotation, 0]}
-          >
-            <boxGeometry args={[1, 1, 1]} />
-            <meshStandardMaterial color="red" shadowSide={BackSide} />
-          </mesh>
+        const position = new Vector3(
+          MathUtils.randFloatSpread(radius),
+          MathUtils.randFloatSpread(length),
+          MathUtils.randFloatSpread(radius),
         )
+        return <SingleRandomCube key={i} size={size} position={position} />
       })}
     </group>
   )
@@ -92,7 +109,8 @@ export default function Habitat() {
         skirtDepth={10}
       >
         <Helion />
-        <RandomCubesInsideCylinder numCubes={50} />
+        <RandomCubesInsideCylinder numCubes={100} size={500} />
+        <RandomCubesInsideCylinder numCubes={500} size={100} />
         <meshStandardMaterial vertexColors side={BackSide} />
       </RingWorld>
       <Water />

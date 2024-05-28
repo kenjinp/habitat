@@ -29,12 +29,14 @@ export const Star = React.forwardRef<Mesh, StarProps>((props, ref) => {
   React.useEffect(() => {
     if (light) {
       console.log("lighttttt", light)
-      light.shadow.mapSize.width = 4096 // default
-      light.shadow.mapSize.height = 4096 // default
+      light.shadow.mapSize.width = 4096 / 2 // default
+      light.shadow.mapSize.height = 4096 / 2 // default
       light.shadow.camera.near = 0.0001 // default
       light.shadow.camera.far = 15_000 // default
     }
   }, [light])
+
+  console.log({ light })
 
   return (
     <mesh ref={ref} position={position}>
@@ -48,9 +50,11 @@ export const Star = React.forwardRef<Mesh, StarProps>((props, ref) => {
         castShadow
         name={`${name}-light`}
       />
-      <EffectComposer>
-        {light && <CylinderFog camera={camera} pointLight={light} />}
-      </EffectComposer>
+      {light && (
+        <EffectComposer>
+          <CylinderFog camera={camera} pointLight={light} />
+        </EffectComposer>
+      )}
       <sphereGeometry args={[radius, 32, 16]}></sphereGeometry>
       <meshStandardMaterial
         color={color}

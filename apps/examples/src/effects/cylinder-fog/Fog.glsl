@@ -59,7 +59,7 @@ vec3 Translate(in vec3 p, in vec3 t) {
     return p - t;
 }
 
-const int MAX_STEPS = 32;
+const int MAX_STEPS = 64;
 
 // const vec3  SUN_COLOR = vec3(20.0, 19.0, 13.0);
 const vec3  SUN_COLOR = vec3(10, 10, 10);
@@ -138,7 +138,7 @@ vec4 badRayMarch(in Ray ray, in vec3 boxPosition, in float maxDistance, in vec3 
     float intersectionDistance = length(end.origin - begin.origin);
     float distancePerStep = intersectionDistance / float(MAX_STEPS);
 
-    float fog = 0.0002 / float(MAX_STEPS);
+    float fog = 0.0002 / 32.0;
 
 // Offsetting the position used for querying occlusion along the world normal can be used to reduce shadow acne.
     vec3 shadowWorldNormal = inverseTransformDirection(sunDir, viewMatrix );
