@@ -1,7 +1,7 @@
 import { RingWorld as HelloRingWorld } from "@hello-worlds/planets"
 import { RingWorld } from "@hello-worlds/react"
 import { useFrame, useThree } from "@react-three/fiber"
-import { DoubleSide, Group, MathUtils, Vector3 } from "three"
+import { BackSide, Group, MathUtils, Vector3 } from "three"
 
 import { useMemo, useRef } from "react"
 import { length, radius } from "./Habitat.dimensions"
@@ -21,7 +21,7 @@ const RandomCubesInsideCylinder: React.FC<{ numCubes: number }> = ({
   return (
     <group>
       {Array.from({ length: numCubes }).map((_, i) => {
-        const scale = MathUtils.randFloatSpread(200)
+        const scale = MathUtils.randFloatSpread(500)
         const x = MathUtils.randFloatSpread(radius)
         const y = MathUtils.randFloatSpread(length)
         const z = MathUtils.randFloatSpread(radius)
@@ -29,13 +29,14 @@ const RandomCubesInsideCylinder: React.FC<{ numCubes: number }> = ({
         return (
           <mesh
             castShadow
+            receiveShadow
             key={i}
             position={[x, y, z]}
             scale={[scale, scale, scale]}
             rotation={[0, rotation, 0]}
           >
             <boxGeometry args={[1, 1, 1]} />
-            <meshStandardMaterial color="red" />
+            <meshStandardMaterial color="red" shadowSide={BackSide} />
           </mesh>
         )
       })}
@@ -91,8 +92,8 @@ export default function Habitat() {
         skirtDepth={10}
       >
         <Helion />
-        <RandomCubesInsideCylinder numCubes={500} />
-        <meshStandardMaterial vertexColors side={DoubleSide} />
+        <RandomCubesInsideCylinder numCubes={50} />
+        <meshStandardMaterial vertexColors side={BackSide} />
       </RingWorld>
       <Water />
     </group>

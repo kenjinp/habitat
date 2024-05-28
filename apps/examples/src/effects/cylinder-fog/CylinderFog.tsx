@@ -1,9 +1,12 @@
 import { wrapEffect } from "@react-three/postprocessing"
 import { Effect, EffectAttribute, WebGLExtension } from "postprocessing"
+import React, { useEffect } from "react"
 import {
   Camera,
+  MathUtils,
   Matrix4,
   PointLight,
+  Texture,
   Uniform,
   Vector3,
   WebGLRenderTarget,
@@ -25,12 +28,25 @@ const _projectionMatrixInverse = new Matrix4()
 class CylinderFogEffect extends Effect {
   camera: Camera
   pointLight: PointLight
+  id: string
   constructor({ camera, pointLight }: FogEffectProps) {
-    console.log({ camera, pointLight })
     // camera gets added after construction in effect-composer
     if (camera) {
       camera.getWorldPosition(_position)
       camera.getWorldDirection(_cameraDirection)
+    }
+
+    if (!pointLight.shadow.map?.texture) {
+      throw new Error("Shadow map not found")
+    }
+
+    const pointLightShadow = {
+      shadowBias: pointLight.shadow.bias,
+      shadowNormalBias: pointLight.shadow.normalBias,
+      shadowRadius: pointLight.shadow.radius,
+      shadowMapSize: pointLight.shadow.mapSize,
+      shadowCameraNear: pointLight.shadow.camera.near,
+      shadowCameraFar: pointLight.shadow.camera.far,
     }
 
     super("FogEffect", fragment, {
@@ -39,12 +55,9 @@ class CylinderFogEffect extends Effect {
         ["uCameraWorldDirection", new Uniform(_cameraDirection)],
         ["uViewMatrixInverse", new Uniform(_matrixWorld)],
         ["uProjectionMatrixInverse", new Uniform(_projectionMatrixInverse)],
-        ["uPointLightShadow", new Uniform(pointLight.shadow)],
-        // [
-        //   "uDirectionalShadowMap",
-        //   new Uniform(directionalLight.shadow.map.texture),
-        // ],
-        ["uDirectionalShadowMatrix", new Uniform(pointLight.shadow.matrix)],
+        ["uPointLightShadow", new Uniform(pointLightShadow)],
+        ["uPointShadowMap", new Uniform(pointLight.shadow.map?.texture)],
+        ["uPointLightShadowMatrix", new Uniform(pointLight.shadow.matrix)],
         ["uSunPosition", new Uniform(pointLight.position)],
         ["uTime", new Uniform(0)],
       ]),
@@ -54,6 +67,7 @@ class CylinderFogEffect extends Effect {
 
     this.camera = camera
     this.pointLight = pointLight
+    this.id = MathUtils.generateUUID()
   }
 
   update(
@@ -61,6 +75,10 @@ class CylinderFogEffect extends Effect {
     _renderTarget: WebGLRenderTarget,
     deltaTime: number,
   ) {
+    if (!this.pointLight.shadow.map?.texture) {
+      throw new Error("Shadow map not found")
+    }
+
     this.camera.getWorldPosition(_position)
     this.camera.getWorldDirection(_cameraDirection)
     this.uniforms.get("uCameraWorldDirection")!.value = _cameraDirection
@@ -68,11 +86,35 @@ class CylinderFogEffect extends Effect {
     this.uniforms.get("uTime")!.value += deltaTime
     this.uniforms.get("uViewMatrixInverse")!.value = this.camera?.matrixWorld
     this.uniforms.get("uSunPosition")!.value = this.pointLight.position
-    // this.uniforms.get("uDirectionalLightShadow")!.value =
-    //   this.directionalLight.shadow
     this.uniforms.get("uProjectionMatrixInverse")!.value =
       this.camera?.projectionMatrixInverse
+    // this.uniforms.get("uPointLightShadow")!.value =
+    //   this.pointLight.shadow.map?.texture
   }
 }
 
-export const CylinderFog = wrapEffect(CylinderFogEffect)
+const usePollForShadowMap = (pointLight: PointLight) => {
+  const [shadowMap, setShadowMap] = React.useState<Texture | null>(null)
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (pointLight?.shadow?.map?.texture) {
+        setShadowMap(pointLight.shadow.map?.texture)
+        clearInterval(interval)
+      }
+    }, 100)
+    return () => clearInterval(interval)
+  }, [pointLight?.shadow?.map?.texture])
+  return shadowMap
+}
+
+export const CylinderFog_ = wrapEffect(CylinderFogEffect)
+
+export const CylinderFog: React.FC<FogEffectProps> = props => {
+  const shadowMap = usePollForShadowMap(props.pointLight)
+
+  if (!props.camera || !props.pointLight || !shadowMap) {
+    return null
+  }
+  console.log("shadowMap", shadowMap)
+  return <CylinderFog_ {...props} />
+}

@@ -47,10 +47,10 @@ export const Canvas: React.FC<
       }}
       shadows="soft"
       shadow-camera-far={1000000}
-      shadow-camera-left={-10000}
-      shadow-camera-right={10000}
-      shadow-camera-top={10000}
-      shadow-camera-bottom={-10000}
+      shadow-camera-left={-20000}
+      shadow-camera-right={20000}
+      shadow-camera-top={20000}
+      shadow-camera-bottom={-20000}
       style={
         style || {
           position: "absolute",
