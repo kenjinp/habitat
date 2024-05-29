@@ -1,4 +1,5 @@
 import { Canvas as R3fCanvas, useThree } from "@react-three/fiber"
+import { Perf } from "r3f-perf"
 import React, { Suspense, useEffect } from "react"
 import { Color } from "three"
 import { Post } from "./post/Post"
@@ -31,6 +32,7 @@ const CameraDebug: React.FC = () => {
 export const Canvas: React.FC<
   React.PropsWithChildren<{ style?: React.CSSProperties }>
 > = ({ children, style }) => {
+  const showPerf = false
   return (
     <R3fCanvas
       gl={{
@@ -62,6 +64,7 @@ export const Canvas: React.FC<
       }
     >
       <Suspense fallback={null}>
+        {showPerf && <Perf />}
         <Post>{children}</Post>
         <CameraDebug />
       </Suspense>

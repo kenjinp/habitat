@@ -108,6 +108,9 @@ importers:
       polyclip-ts:
         specifier: ^0.16.5
         version: 0.16.5
+      r3f-perf:
+        specifier: ^7.2.1
+        version: 7.2.1(@react-three/fiber@8.16.3(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(three@0.164.1))(@types/react@18.3.1)(@types/three@0.164.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(three@0.164.1)
       react-reconciler:
         specifier: ^0.29.2
         version: 0.29.2(react@18.3.1)

@@ -28,6 +28,10 @@ uniform vec3 uSunPosition;
 
 #define saturate(a) clamp( a, 0.0, 1.0 )
 
+float hash(float n) {
+  return fract(sin(n) * 43758.5453);
+}
+
 vec3 _ScreenToWorld(vec3 posS) {
   vec2 uv = posS.xy;
   float z = posS.z;
@@ -59,7 +63,7 @@ vec3 Translate(in vec3 p, in vec3 t) {
     return p - t;
 }
 
-const int MAX_STEPS = 64;
+const int MAX_STEPS = 32;
 
 // const vec3  SUN_COLOR = vec3(20.0, 19.0, 13.0);
 const vec3  SUN_COLOR = vec3(10, 10, 10);
@@ -111,7 +115,7 @@ float easeInExpo(in float x) {
 //     Ray end;
 // };
 
-vec4 badRayMarch(in Ray ray, in vec3 boxPosition, in float maxDistance, in vec3 scene_color) {
+vec4 badRayMarch(in float jitter, in Ray ray, in vec3 boxPosition, in float maxDistance, in vec3 scene_color) {
     float distanceTraveled = 0.0;
     vec3 color = vec3(0.0, 0.0, 0.0);
     vec3 sunDir = get_sun_direction(ray.origin);
@@ -128,14 +132,19 @@ vec4 badRayMarch(in Ray ray, in vec3 boxPosition, in float maxDistance, in vec3 
     // terrain or other mesh in front of the sdf box
     if (maxDistance < intersectionNear) return vec4(accum, 1.0);
 
+    // the ray starts at the intersection point
     Ray begin = Ray(ray.origin + ray.direction * intersectionNear, ray.direction);
-    // if we're inside the box, start at the input ray origin
+    // if we're inside the box, start at the input ray origin instead
     if (intersectionNear <= 0.0) {
       begin = Ray(ray.origin, ray.direction);
     }
     Ray end = Ray(ray.origin + ray.direction * min(intersectionFar, maxDistance), ray.direction);
 
     float intersectionDistance = length(end.origin - begin.origin);
+    // change this to some value if we want to make the raymarch distance dependent on the intersection distance
+    float maxIntersectionDistance = intersectionDistance;
+    int numSteps = int(remap(intersectionDistance, 0.0, maxIntersectionDistance, 0.0, float(MAX_STEPS)));
+
     float distancePerStep = intersectionDistance / float(MAX_STEPS);
 
     float fog = 0.0002 / 32.0;
@@ -143,11 +152,11 @@ vec4 badRayMarch(in Ray ray, in vec3 boxPosition, in float maxDistance, in vec3 
 // Offsetting the position used for querying occlusion along the world normal can be used to reduce shadow acne.
     vec3 shadowWorldNormal = inverseTransformDirection(sunDir, viewMatrix );
 
-    for(int i = 0; i < MAX_STEPS; ++i) {
+    for(int i = 0; i < numSteps; ++i) {
 
       // get elevation from cylinder walls
 
-      vec3 currentPosition = begin.origin + ray.direction * (distancePerStep * float(i));
+      vec3 currentPosition = begin.origin + ray.direction * (distancePerStep * float(i)) * jitter;
       float height = length(currentPosition - vec3(0.0, currentPosition.y, 0.0));
       
       // // float height = currentPosition.y;
@@ -182,8 +191,8 @@ vec4 badRayMarch(in Ray ray, in vec3 boxPosition, in float maxDistance, in vec3 
       // accum += sky * fog;
       // accum += sun * fog;
 
-      bool inShadow = shadowDepth < directionalShadowCoord.z;
-      if (shadowDepth >= 1.0) {
+      bool inShadow = shadowDepth >= 1.0;
+      if (inShadow) {
           // accum += SHADOW_COLOR * vec3(shadowDepth);
       } else {
           accum += sky * fog;
@@ -200,6 +209,8 @@ void mainImage(const in vec4 inputColor, const in vec2 uv, const in float depth,
   float d = readDepth(texture2D(depthBuffer, uv).x);
   float v_depth = pow(2.0, d / (A_logDepthBufFC() * 0.5));
   float z_view = v_depth - 1.0;
+  float jitter = hash(uv.x + uv.y * 123.0 + uTime);
+
   
   float z = texture2D(depthBuffer, uv).x;
   float depthZ = (exp2(z / (A_logDepthBufFC() * 0.5)) - 1.0);
@@ -212,7 +223,7 @@ void mainImage(const in vec4 inputColor, const in vec2 uv, const in float depth,
 
   Ray ray = Ray(rayOrigin, rayDirection);
 
-  vec4 color = badRayMarch(ray, vec3(0.0, -15000.0/2.0, 0.0), sceneDepth, inputColor.xyz);
+  vec4 color = badRayMarch(jitter, ray, vec3(0.0, -15000.0/2.0, 0.0), sceneDepth, inputColor.xyz);
   // vec4 color = rayMarch(ray, vec3(0.0, -15000.0/2.0, 0.0), sceneDepth, inputColor.xyz);
 
   outputColor = vec4(color.xyz, 1.0);
