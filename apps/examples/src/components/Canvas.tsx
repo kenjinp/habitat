@@ -1,16 +1,7 @@
 import { Canvas as R3fCanvas, useThree } from "@react-three/fiber"
 import { Perf } from "r3f-perf"
 import React, { Suspense, useEffect } from "react"
-import { Color } from "three"
 import { Post } from "./post/Post"
-
-const Background: React.FC = () => {
-  useThree(state => {
-    // state.scene.background = new Color("#3D4058")
-    state.scene.background = new Color("black")
-  })
-  return null
-}
 
 const CameraDebug: React.FC = () => {
   const camera = useThree(state => state.camera)

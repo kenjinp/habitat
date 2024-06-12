@@ -3,6 +3,7 @@ import { RingWorld } from "@hello-worlds/react"
 import { useFrame, useThree } from "@react-three/fiber"
 import { BackSide, Group, MathUtils, Mesh, Vector3 } from "three"
 
+import { OrbitControls } from "@react-three/drei"
 import { useMemo, useRef, useState } from "react"
 import { length, radius } from "./Habitat.dimensions"
 import Worker from "./Habitat.worker?worker"
@@ -109,9 +110,11 @@ export default function Habitat() {
         skirtDepth={10}
       >
         <Helion />
-        <RandomCubesInsideCylinder numCubes={100} size={500} />
-        <RandomCubesInsideCylinder numCubes={500} size={100} />
+        {/* <RandomCubesInsideCylinder numCubes={100} size={500} />
+        <RandomCubesInsideCylinder numCubes={500} size={100} /> */}
         <meshStandardMaterial vertexColors side={BackSide} />
+        {/* <GodCamera /> */}
+        <OrbitControls />
       </RingWorld>
       <Water />
     </group>

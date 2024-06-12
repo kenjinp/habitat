@@ -15,7 +15,7 @@ import {
 
 export const Helion: React.FC = () => {
   const meshRef = React.useRef()
-  const [_, setTime] = React.useState(0)
+  const [time_, setTime] = React.useState(0)
   const [position] = React.useState(new Vector3(0, 0, 0))
   const { dayFraction, dayOfYear, latitude, longitude } = useControls({
     dayFraction: {
@@ -83,19 +83,19 @@ export const Helion: React.FC = () => {
   }
 
   // TODO: fix bug and remove this
-  React.useEffect(() => {
-    // set interval to rerender in 100 ms
-    const interval = setInterval(() => {
-      setTime(time + 1)
-    }, 100)
-    return () => clearInterval(interval)
-  }, [])
+  // React.useEffect(() => {
+  //   // set interval to rerender in 100 ms
+  //   const interval = setInterval(() => {
+  //     setTime(time + 1)
+  //   }, 100)
+  //   return () => clearInterval(interval)
+  // }, [])
 
   useFrame(({ clock }) => {
     if (!meshRef.current) return
     // const intervalInSeconds = 60
     // const t = clock.getElapsedTime() % intervalInSeconds
-    // const time = t / intervalInSeconds * 100
+    // const time = (t / intervalInSeconds) * 100
     // setTime(time)
     const y = getPositionY(time)
     position.setY(y)
@@ -114,13 +114,21 @@ export const Helion: React.FC = () => {
           name="Helion"
         />
         {/* <Html>
-      <div style={{ position: 'absolute', top: 0, left: 0, padding: 10, width: 300 }}>
-        <h4>Helion (Sun simulacra)</h4>
-        <p>Hour: {dayFractionToHour.toFixed(2)}</p>
-        <p>Sun Angle: {sunAngle.toFixed(2)}</p>
-        <p>Light Intensity: {lightIntensity}</p>
-      </div>
-    </Html> */}
+          <div
+            style={{
+              position: "absolute",
+              top: 0,
+              left: 0,
+              padding: 10,
+              width: 300,
+            }}
+          >
+            <h4>Helion (Sun simulacra)</h4>
+            <p>Hour: {dayFractionToHour.toFixed(2)}</p>
+            <p>Sun Angle: {sunAngle.toFixed(2)}</p>
+            <p>Light Intensity: {lightIntensity}</p>
+          </div>
+        </Html> */}
       </mesh>
     </>
   )

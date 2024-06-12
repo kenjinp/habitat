@@ -17,6 +17,7 @@ import fragment from "./Fog.glsl"
 export interface FogEffectProps {
   camera: Camera
   pointLight: PointLight
+  blueNoiseTexture: Texture
 }
 
 // tempValues
@@ -29,7 +30,7 @@ class CylinderFogEffect extends Effect {
   camera: Camera
   pointLight: PointLight
   id: string
-  constructor({ camera, pointLight }: FogEffectProps) {
+  constructor({ camera, pointLight, blueNoiseTexture }: FogEffectProps) {
     // camera gets added after construction in effect-composer
     if (camera) {
       camera.getWorldPosition(_position)
@@ -49,6 +50,8 @@ class CylinderFogEffect extends Effect {
       shadowCameraFar: pointLight.shadow.camera.far,
     }
 
+    console.log("new thingy")
+
     super("FogEffect", fragment, {
       uniforms: new Map<string, Uniform>([
         ["uCameraPosition", new Uniform(_position)],
@@ -56,6 +59,9 @@ class CylinderFogEffect extends Effect {
         ["uViewMatrixInverse", new Uniform(_matrixWorld)],
         ["uProjectionMatrixInverse", new Uniform(_projectionMatrixInverse)],
         ["uPointLightShadow", new Uniform(pointLightShadow)],
+        ["uPointLight", new Uniform(pointLight)],
+        ["uBlueNoise", new Uniform(blueNoiseTexture)],
+        ["uFrame", new Uniform(0)],
         ["uPointShadowMap", new Uniform(pointLight.shadow.map?.texture)],
         ["uPointLightShadowMatrix", new Uniform(pointLight.shadow.matrix)],
         ["uSunPosition", new Uniform(pointLight.position)],
@@ -84,6 +90,7 @@ class CylinderFogEffect extends Effect {
     this.uniforms.get("uCameraWorldDirection")!.value = _cameraDirection
     this.uniforms.get("uCameraPosition")!.value = _position
     this.uniforms.get("uTime")!.value += deltaTime
+    this.uniforms.get("uFrame")!.value += 1
     this.uniforms.get("uViewMatrixInverse")!.value = this.camera?.matrixWorld
     this.uniforms.get("uSunPosition")!.value = this.pointLight.position
     this.uniforms.get("uProjectionMatrixInverse")!.value =
@@ -104,6 +111,7 @@ const usePollForShadowMap = (pointLight: PointLight) => {
     }, 100)
     return () => clearInterval(interval)
   }, [pointLight?.shadow?.map?.texture])
+
   return shadowMap
 }
 
@@ -115,6 +123,12 @@ export const CylinderFog: React.FC<FogEffectProps> = props => {
   if (!props.camera || !props.pointLight || !shadowMap) {
     return null
   }
-  console.log("shadowMap", shadowMap)
-  return <CylinderFog_ {...props} />
+
+  return (
+    <CylinderFog_
+      pointLight={props.pointLight}
+      camera={props.camera}
+      blueNoiseTexture={props.blueNoiseTexture}
+    />
+  )
 }

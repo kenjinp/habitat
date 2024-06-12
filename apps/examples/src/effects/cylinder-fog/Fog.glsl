@@ -4,6 +4,8 @@ uniform vec3 uCameraPosition;
 uniform vec3 uCameraWorldDirection;
 uniform float uTime;
 uniform vec3 uSunPosition;
+uniform int uFrame;
+uniform sampler2D uBlueNoise;
 
 #define RAY_BETA vec3(5.5e-6, 13.0e-6, 22.4e-6) /* rayleigh, affects the color of the sky */
 #define MIE_BETA vec3(21e-6) /* mie, affects the color of the blob around the sun */
@@ -28,8 +30,19 @@ uniform vec3 uSunPosition;
 
 #define saturate(a) clamp( a, 0.0, 1.0 )
 
-float hash(float n) {
-  return fract(sin(n) * 43758.5453);
+uint murmurHash11(uint src) {
+    const uint M = 0x5bd1e995u;
+    uint h = 1190494759u;
+    src *= M; src ^= src>>24u; src *= M;
+    h *= M; h ^= src;
+    h ^= h>>13u; h *= M; h ^= h>>15u;
+    return h;
+}
+
+// 1 output, 1 input
+float hash11(float src) {
+    uint h = murmurHash11(floatBitsToUint(src));
+    return uintBitsToFloat(h & 0x007fffffu | 0x3f800000u) - 1.0;
 }
 
 vec3 _ScreenToWorld(vec3 posS) {
@@ -75,6 +88,7 @@ const float SUN_SCATTERING_ANISO = 0.07;
 uniform sampler2D uPointShadowMap;
 uniform mat4 uPointLightShadowMatrix;
 uniform PointLightShadow uPointLightShadow;
+uniform PointLight uPointLight;
 
 // Henyey-Greenstein phase function
 float HG_phase(in vec3 L, in vec3 V, in float aniso)
@@ -115,7 +129,7 @@ float easeInExpo(in float x) {
 //     Ray end;
 // };
 
-vec4 badRayMarch(in float jitter, in Ray ray, in vec3 boxPosition, in float maxDistance, in vec3 scene_color) {
+vec4 badRayMarch(in PointLight pointLight, in float jitter, in Ray ray, in vec3 boxPosition, in float maxDistance, in vec3 scene_color) {
     float distanceTraveled = 0.0;
     vec3 color = vec3(0.0, 0.0, 0.0);
     vec3 sunDir = get_sun_direction(ray.origin);
@@ -185,8 +199,8 @@ vec4 badRayMarch(in float jitter, in Ray ray, in vec3 boxPosition, in float maxD
       // shadowDepth = unpackRGBAToDepth( texture2D( uPointShadowMap, directionalShadowCoord.xy ) );
 
       float dianceToSun = length(uSunPosition - currentPosition);
-      vec3 sky = SKY_COLOR * (height_factor * 0.2) * distancePerStep;
-      vec3 sun = SUN_COLOR * sun_phase * (height_factor * 0.5 )  * distancePerStep;
+      vec3 sky = SKY_COLOR * (height_factor * 0.4) * distancePerStep;
+      vec3 sun = SUN_COLOR * sun_phase * (height_factor * 0.6 )  * distancePerStep;
       
       // accum += sky * fog;
       // accum += sun * fog;
@@ -199,6 +213,8 @@ vec4 badRayMarch(in float jitter, in Ray ray, in vec3 boxPosition, in float maxD
           accum += sun * fog;
       }
     }
+    
+    accum *= clamp(pointLight.color, vec3(0.02, 0.02, 0.02), vec3(1.0)) * clamp(pointLight.intensity, 0.0, 1.0);
 
     return vec4(accum, 1.0);
 }
@@ -209,7 +225,12 @@ void mainImage(const in vec4 inputColor, const in vec2 uv, const in float depth,
   float d = readDepth(texture2D(depthBuffer, uv).x);
   float v_depth = pow(2.0, d / (A_logDepthBufFC() * 0.5));
   float z_view = v_depth - 1.0;
-  float jitter = hash(uv.x + uv.y * 123.0 + uTime);
+
+
+  float blueNoise = texture2D(uBlueNoise, gl_FragCoord.xy / 1024.0).r;
+  float offset = fract(blueNoise + float(uFrame % 32) / sqrt(0.5));
+
+  float jitter = offset;
 
   
   float z = texture2D(depthBuffer, uv).x;
@@ -223,7 +244,7 @@ void mainImage(const in vec4 inputColor, const in vec2 uv, const in float depth,
 
   Ray ray = Ray(rayOrigin, rayDirection);
 
-  vec4 color = badRayMarch(jitter, ray, vec3(0.0, -15000.0/2.0, 0.0), sceneDepth, inputColor.xyz);
+  vec4 color = badRayMarch(uPointLight, jitter, ray, vec3(0.0, -15000.0/2.0, 0.0), sceneDepth, inputColor.xyz);
   // vec4 color = rayMarch(ray, vec3(0.0, -15000.0/2.0, 0.0), sceneDepth, inputColor.xyz);
 
   outputColor = vec4(color.xyz, 1.0);

@@ -7,6 +7,14 @@ struct PointLightShadow {
   float shadowCameraFar;
 };
 
+struct PointLight {
+  vec3 position;
+  vec3 color;
+  float intensity;
+  // float distance;
+  // float decay;
+};
+
 
 float texture2DCompare( sampler2D depths, vec2 uv, float compare ) {
 
