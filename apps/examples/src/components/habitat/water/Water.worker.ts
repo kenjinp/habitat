@@ -2,10 +2,6 @@ import {
   ChunkGenerator3Initializer,
   ColorArrayWithAlpha,
   createThreadedRingWorldWorker,
-  DEFAULT_NOISE_PARAMS,
-  Noise,
-  NOISE_TYPES,
-  remap,
 } from "@hello-worlds/planets"
 import { Color } from "three"
 
@@ -16,7 +12,7 @@ export type ThreadParams = {
 const heightGenerator: ChunkGenerator3Initializer<ThreadParams, number> = ({
   data: { seaLevel },
 }) => {
-  return (_) => {
+  return _ => {
     return seaLevel + 5
   }
 }

@@ -217,7 +217,7 @@ vec4 badRayMarch(in PointLight pointLight, in float jitter, in Ray ray, in vec3 
     return vec4(accum, 1.0);
 }
 
-void mainImage(const in vec4 inputColor, const in vec2 uv, const in float depth, out vec4 outputColor) {
+void main(const in vec4 inputColor, const in vec2 uv, const in float depth, out vec4 outputColor) {
   vec4 sceneColor = inputColor;
   float depthValue = getViewZ(depth);
   float d = readDepth(texture2D(depthBuffer, uv).x);

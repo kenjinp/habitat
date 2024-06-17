@@ -1,7 +1,6 @@
 import { SUN_RADIUS } from "@hello-worlds/planets"
 import { useTexture } from "@react-three/drei"
 import { useThree } from "@react-three/fiber"
-import { EffectComposer } from "@react-three/postprocessing"
 import * as React from "react"
 import {
   Mesh,
@@ -10,7 +9,6 @@ import {
   PointLight,
   RepeatWrapping,
 } from "three"
-import { CylinderFog } from "../../effects/cylinder-fog/CylinderFog"
 
 export interface StarProps {
   position: [number, number, number]
@@ -63,24 +61,6 @@ export const Star = React.forwardRef<Mesh, StarProps>((props, ref) => {
         castShadow
         name={`${name}-light`}
       />
-      {/* This is dumb, should be outside. Why does an effect need to be a direct descendant?! */}
-      {light && blueNoiseTexture && (
-        <>
-          <EffectComposer resolutionScale={0.1}>
-            <CylinderFog
-              key={"cylinder-fog"}
-              camera={camera}
-              pointLight={light}
-              blueNoiseTexture={blueNoiseTexture}
-            />
-            {/* <DepthOfField
-              focusDistance={0} // where to focus
-              focalLength={0.02} // focal length
-              bokehScale={2} // bokeh size
-            /> */}
-          </EffectComposer>
-        </>
-      )}
       <sphereGeometry args={[radius, 32, 16]}></sphereGeometry>
       <meshStandardMaterial
         color={color}

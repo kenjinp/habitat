@@ -12,11 +12,11 @@ importers:
         specifier: ^0.0.9
         version: 0.0.9
       '@hello-worlds/planets':
-        specifier: 0.0.24
-        version: 0.0.24(@hello-worlds/core@0.0.9)(three@0.164.1)
+        specifier: 0.0.25
+        version: 0.0.25(@hello-worlds/core@0.0.9)(three@0.164.1)
       '@hello-worlds/react':
-        specifier: 0.0.27
-        version: 0.0.27(@hello-worlds/core@0.0.9)(@hello-worlds/planets@0.0.24(@hello-worlds/core@0.0.9)(three@0.164.1))(@react-three/drei@9.105.6(@react-three/fiber@8.16.3(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(three@0.164.1))(@types/react@18.3.1)(@types/three@0.164.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(three@0.164.1))(@react-three/fiber@8.16.3(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(three@0.164.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(three@0.164.1)
+        specifier: 0.0.28
+        version: 0.0.28(@hello-worlds/core@0.0.9)(@hello-worlds/planets@0.0.25(@hello-worlds/core@0.0.9)(three@0.164.1))(@react-three/drei@9.105.6(@react-three/fiber@8.16.3(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(three@0.164.1))(@types/react@18.3.1)(@types/three@0.164.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(three@0.164.1))(@react-three/fiber@8.16.3(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(three@0.164.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(three@0.164.1)
       '@react-three/drei':
         specifier: 9.105.6
         version: 9.105.6(@react-three/fiber@8.16.3(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(three@0.164.1))(@types/react@18.3.1)(@types/three@0.164.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(three@0.164.1)
@@ -530,17 +530,17 @@ packages:
   '@hello-worlds/core@0.0.9':
     resolution: {integrity: sha512-g6ys9dswc/HXrTqkSUxQdOZ/c3t5t/B5Kn6fi+kpLj+faOpD5VHPbtxJ4bwARaKqVdVMPmXrszjIVtE0YEwjiQ==}
 
-  '@hello-worlds/planets@0.0.24':
-    resolution: {integrity: sha512-zVELaJ+avVrZFKyvnG6AsNVdtUuKS8MTYxFzzy+C8NLGsFJDMbDeAQsB9HdjsVaSdLWkVS7Qlp1EwjS1lP5uug==}
+  '@hello-worlds/planets@0.0.25':
+    resolution: {integrity: sha512-wxq7MPqLCF7kUkyuFGQ4wTgxA4NBCvGvtae/oIV656JvitztqLtGUR4Mwk8lRCNhVugwqS+EAYSHmgLt5tpxaw==}
     peerDependencies:
       '@hello-worlds/core': 0.0.9
       three: ^0.143.0
 
-  '@hello-worlds/react@0.0.27':
-    resolution: {integrity: sha512-Va5EztV3xxrMykL3y7rfMDOB5ZhwyCJVWxSDfgexnqAp624NnewhdGHKLb0BddDo1QM0qNuS17qPq4hpZzgXiQ==}
+  '@hello-worlds/react@0.0.28':
+    resolution: {integrity: sha512-o+++VmZ9gH69OWZTFACG15jFjXM4xdqPWSrzfYbMx41q3ncndAxwwHRks2AofO3VJRfcPC0oUiZMfODM4DecsQ==}
     peerDependencies:
       '@hello-worlds/core': ^0.0.9
-      '@hello-worlds/planets': ^0.0.24
+      '@hello-worlds/planets': ^0.0.25
       '@react-three/drei': ^9.30.1
       '@react-three/fiber': ^8.8.2
       react: ^18.0.0
@@ -4352,17 +4352,17 @@ snapshots:
     dependencies:
       rand-seed: 1.0.2
 
-  '@hello-worlds/planets@0.0.24(@hello-worlds/core@0.0.9)(three@0.164.1)':
+  '@hello-worlds/planets@0.0.25(@hello-worlds/core@0.0.9)(three@0.164.1)':
     dependencies:
       '@hello-worlds/core': 0.0.9
       simplex-noise: 3.0.1
       three: 0.164.1
       three-mesh-bvh: 0.5.24(three@0.164.1)
 
-  '@hello-worlds/react@0.0.27(@hello-worlds/core@0.0.9)(@hello-worlds/planets@0.0.24(@hello-worlds/core@0.0.9)(three@0.164.1))(@react-three/drei@9.105.6(@react-three/fiber@8.16.3(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(three@0.164.1))(@types/react@18.3.1)(@types/three@0.164.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(three@0.164.1))(@react-three/fiber@8.16.3(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(three@0.164.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(three@0.164.1)':
+  '@hello-worlds/react@0.0.28(@hello-worlds/core@0.0.9)(@hello-worlds/planets@0.0.25(@hello-worlds/core@0.0.9)(three@0.164.1))(@react-three/drei@9.105.6(@react-three/fiber@8.16.3(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(three@0.164.1))(@types/react@18.3.1)(@types/three@0.164.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(three@0.164.1))(@react-three/fiber@8.16.3(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(three@0.164.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(three@0.164.1)':
     dependencies:
       '@hello-worlds/core': 0.0.9
-      '@hello-worlds/planets': 0.0.24(@hello-worlds/core@0.0.9)(three@0.164.1)
+      '@hello-worlds/planets': 0.0.25(@hello-worlds/core@0.0.9)(three@0.164.1)
       '@hmans/use-rerender': 0.0.2(react@18.3.1)
       '@react-three/drei': 9.105.6(@react-three/fiber@8.16.3(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(three@0.164.1))(@types/react@18.3.1)(@types/three@0.164.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(three@0.164.1)
       '@react-three/fiber': 8.16.3(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(three@0.164.1)

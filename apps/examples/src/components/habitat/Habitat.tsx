@@ -5,6 +5,7 @@ import { BackSide, Group, MathUtils, Mesh, Vector3 } from "three"
 
 import { OrbitControls } from "@react-three/drei"
 import { useMemo, useRef, useState } from "react"
+import { useImageData } from "../../hooks/use-image/use-image"
 import { length, radius } from "./Habitat.dimensions"
 import Worker from "./Habitat.worker?worker"
 import { Helion } from "./helion/Helion"
@@ -66,12 +67,16 @@ export default function Habitat() {
   const habitatGroup = useRef<Group>(null)
   const camera = useThree(state => state.camera)
   const planet = useRef<HelloRingWorld<HabitatData>>(null)
+  const heightmap = useImageData("large-terrain.png")
 
   const data = useMemo(() => {
     return {
       seed: "this is a random seed",
+      heightmap: heightmap.result,
     }
-  }, [])
+  }, [heightmap.result])
+
+  console.log({ heightmap })
 
   useFrame(({ clock }) => {
     function rotationsPerSecond(radius: number, targetGravity: number): number {
@@ -101,7 +106,7 @@ export default function Habitat() {
         length={length}
         ref={planet}
         radius={radius}
-        minCellSize={64}
+        minCellSize={32}
         minCellResolution={128}
         lodOrigin={camera.position}
         worker={worker}

@@ -1,9 +1,8 @@
-import { RingWorld as HelloRingWorld } from "@hello-worlds/planets"
 import { RingWorld } from "@hello-worlds/react"
 import { useThree } from "@react-three/fiber"
-import { BackSide, Color, DoubleSide, FrontSide, Vector3 } from "three"
+import { BackSide, Color, Vector3 } from "three"
 
-import { useMemo, useRef } from "react"
+import { useMemo } from "react"
 import { length, radius } from "../Habitat.dimensions"
 import Worker from "./Water.worker?worker"
 
@@ -23,8 +22,7 @@ export default function Water() {
   }, [])
 
   return (
-    <group
-    >
+    <group>
       <RingWorld
         position={new Vector3()}
         length={length}
@@ -37,7 +35,24 @@ export default function Water() {
         inverted
         skirtDepth={0.000000000000001}
       >
-        <meshStandardMaterial transparent opacity={0.9} color={new Color(0x017B92)} side={BackSide} />
+        {/* <MeshReflectorMaterial
+          mirror={1}
+          side={DoubleSide}
+          resolution={1024 * 4}
+          mixBlur={0.5}
+          mixStrength={15}
+          depthScale={0.1}
+          minDepthThreshold={1000}
+          color="red"
+          metalness={0.6}
+          roughness={1}
+        /> */}
+        <meshStandardMaterial
+          transparent
+          opacity={0.9}
+          color={new Color(0x017b92)}
+          side={BackSide}
+        />
       </RingWorld>
     </group>
   )

@@ -1,4 +1,5 @@
 import { useThree } from "@react-three/fiber"
+import { EffectComposer, Noise } from "@react-three/postprocessing"
 
 export const Post: React.FC<React.PropsWithChildren> = ({ children }) => {
   const gl = useThree(state => state.gl)
@@ -8,12 +9,13 @@ export const Post: React.FC<React.PropsWithChildren> = ({ children }) => {
 
   return useEffectComposer ? (
     <>
-      {/* <EffectComposer ref={ref => console.log(ref)}>
-        <Bloom luminanceThreshold={0.3} luminanceSmoothing={0.8} height={512} />
-        <Noise opacity={0.016} />
-        {/* <Vignette eskil={false} offset={0.1} darkness={1.1} /> 
-      </EffectComposer> 
-      */}
+      {/* <CylinderAtmosphere /> */}
+      <EffectComposer>
+        {/* <TestPass /> */}
+        {/* <Depth /> */}
+        {/* <Bloom /> */}
+        <Noise opacity={0.5} />
+      </EffectComposer>
       {children}
     </>
   ) : null

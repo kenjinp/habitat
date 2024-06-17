@@ -37,6 +37,7 @@ export const Canvas: React.FC<
         near: 0.01,
         far: Number.MAX_SAFE_INTEGER,
         position: [971.6727012195914, -3427.8869171614824, -1710.466415466463],
+        fov: 90,
       }}
       shadows="soft"
       shadow-camera-far={1000000}
@@ -58,6 +59,7 @@ export const Canvas: React.FC<
         {showPerf && <Perf />}
         <Post>{children}</Post>
         <CameraDebug />
+        <axesHelper args={[2000]} />
       </Suspense>
     </R3fCanvas>
   )
