@@ -1,3 +1,4 @@
+
 struct PointLightShadow {
   float shadowBias;
   float shadowNormalBias;
@@ -115,7 +116,7 @@ float getPointShadow( sampler2D shadowMap, vec2 shadowMapSize, float shadowBias,
 			vec2 texelSize = vec2( 1.0 ) / ( shadowMapSize * vec2( 4.0, 2.0 ) );
 
 			#if defined( SHADOWMAP_TYPE_PCF ) || defined( SHADOWMAP_TYPE_PCF_SOFT ) || defined( SHADOWMAP_TYPE_VSM )
-
+ 
 				vec2 offset = vec2( - 1, 1 ) * shadowRadius * texelSize.y;
 
 				shadow = (

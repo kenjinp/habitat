@@ -1,37 +1,31 @@
-import { NOISE_TYPES, Noise } from "@hello-worlds/planets"
+import FastNoiseLite from "fastnoise-lite"
 import { MathUtils } from "three"
 
-const biasNoise = new Noise({
-  seed: "banana",
-  height: 2,
-  scale: 1000,
-})
-
-const warpNoise = new Noise({
-  seed: "banana",
-  noiseType: NOISE_TYPES.BILLOWING,
-  height: 100,
-  scale: 1000,
-})
+let noise = new FastNoiseLite()
+noise.SetNoiseType(FastNoiseLite.NoiseType.OpenSimplex2)
+noise.SetFractalType(FastNoiseLite.FractalType.FBM)
+noise.SetFractalOctaves(4)
+noise.SetSeed(12345)
+noise.SetFrequency(0.03)
 
 export function interpolateColor(
-  x: number,
-  y: number,
+  x_: number,
+  y_: number,
   width: number,
   pixelData: Uint8Array,
   // noise: Noise,
   useNoise = true,
 ) {
+  let x = x_
+  let y = y_
   // lets push the noise from the origin, which might otherwise produce artifacts
-  if (useNoise) {
-    const noiseOffset = 1000
-    let n = biasNoise.get(x + noiseOffset, 0, y + noiseOffset)
-    let e = warpNoise.get(x + noiseOffset + n, 0, y + n + noiseOffset)
-    let f = biasNoise.get(x + noiseOffset + e, 0, y + e + noiseOffset)
-    let g = warpNoise.get(x + noiseOffset + f, 0, y + f + noiseOffset)
-    x = x + n + e + f + g
-    y = y + n + e + f + g
-  }
+  // Noise calls are very slow, how to speed them up?
+  // if (useNoise) {
+  //   let e = noise.GetNoise(x, y) * 12
+  //   let f = noise.GetNoise(x, y)
+  //   x = x + e
+  //   y = y + f
+  // }
 
   // Get the integer and fractional parts of the coordinates
   const x0 = MathUtils.clamp(Math.floor(x), 0, width - 1)
@@ -51,10 +45,13 @@ export function interpolateColor(
   const bottomRight = getPixelColor(x1, y1, width, pixelData)
 
   // Calculate the weights based on the fractional parts
-  const weightX = x - x0
-  const weightY = y - y0
+  let weightX = x - x0
+  let weightY = y - y0
 
-  return interpolateChannel(
+  // add midpoint displacement to reduce banding
+  // const n = noise.GetNoise(weightX, weightY)
+
+  const interpolated = interpolateChannel(
     topLeft,
     topRight,
     bottomLeft,
@@ -62,6 +59,7 @@ export function interpolateColor(
     weightX,
     weightY,
   )
+  return interpolated
 }
 
 function interpolateChannel(
@@ -87,6 +85,8 @@ export function getPixelColor(
   width: number,
   pixelData: Uint8Array,
 ) {
+  x = MathUtils.clamp(Math.floor(x), 0, width - 1)
+  y = MathUtils.clamp(Math.floor(y), 0, width - 1)
   const index = (Math.floor(x * width) + Math.floor(y)) * 4
 
   if (!Number.isFinite(pixelData[index])) {

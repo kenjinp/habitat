@@ -1,5 +1,6 @@
 import { useThree } from "@react-three/fiber"
 import { EffectComposer, Noise } from "@react-three/postprocessing"
+import CylinderAtmospherePass from "../../effects/cylinder-atmosphere-pass/CylinderAtmospherePass"
 
 export const Post: React.FC<React.PropsWithChildren> = ({ children }) => {
   const gl = useThree(state => state.gl)
@@ -9,12 +10,10 @@ export const Post: React.FC<React.PropsWithChildren> = ({ children }) => {
 
   return useEffectComposer ? (
     <>
-      {/* <CylinderAtmosphere /> */}
       <EffectComposer>
-        {/* <TestPass /> */}
+        <CylinderAtmospherePass />
+        <Noise opacity={0.1} />
         {/* <Depth /> */}
-        {/* <Bloom /> */}
-        <Noise opacity={0.5} />
       </EffectComposer>
       {children}
     </>

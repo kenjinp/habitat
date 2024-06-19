@@ -23,7 +23,7 @@ const CameraDebug: React.FC = () => {
 export const Canvas: React.FC<
   React.PropsWithChildren<{ style?: React.CSSProperties }>
 > = ({ children, style }) => {
-  const showPerf = false
+  const showPerf = true
   return (
     <R3fCanvas
       gl={{

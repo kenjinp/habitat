@@ -4,6 +4,7 @@ const passFragmentShader = `
 // Based on https://www.shadertoy.com/view/ltKBDd by battlebottle
 
 uniform sampler2D uTexture;
+uniform sampler2D inputBufferB;
 uniform bool uUpscaling;
 uniform vec2 uResolution;
 
@@ -93,9 +94,13 @@ vec4 textureBicubic(sampler2D s, vec2 uv, float lod) {
 void main() {
     vec2 uv = vUv;
     vec4 res = textureBicubic(uTexture, uv, 0.5);
+    vec4 texelB = texture2D(inputBufferB, vUv);
 
-    vec4 color = res;
+    vec4 color = res + texelB;
     gl_FragColor = color;
+    
+    #include <colorspace_fragment>
+    #include <dithering_fragment>
 }
 `
 
@@ -107,6 +112,7 @@ void main() {
     vUv = uv;
     gl_Position = vec4(position, 1.0);
 }
+
 `
 
 const DPR = 2
@@ -116,6 +122,9 @@ class BicubicUpscaleMaterial extends THREE.ShaderMaterial {
     super({
       uniforms: {
         uTexture: {
+          value: null,
+        },
+        inputBufferB: {
           value: null,
         },
         uResolution: {
@@ -131,6 +140,10 @@ class BicubicUpscaleMaterial extends THREE.ShaderMaterial {
       depthWrite: false,
       depthTest: false,
     })
+  }
+
+  setTexture(texture: THREE.Texture) {
+    this.uniforms.uTexture.value = texture
   }
 }
 

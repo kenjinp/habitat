@@ -79,3 +79,8 @@ vec2 intersectRayCylinder(vec3 rayOrigin, vec3 rayDir, float r, float h) {
     return vec2(nearest, farthest);
 }
 
+struct Cylinder {
+    vec3 position;
+    float radius;
+    float height;
+};

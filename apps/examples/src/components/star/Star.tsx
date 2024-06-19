@@ -38,6 +38,7 @@ export const Star = React.forwardRef<Mesh, StarProps>((props, ref) => {
   blueNoiseTexture.magFilter = NearestFilter
 
   const [light, setLight] = React.useState<PointLight | null>(null)
+  const set = useThree(state => state.set)
 
   React.useEffect(() => {
     if (light) {
@@ -46,6 +47,9 @@ export const Star = React.forwardRef<Mesh, StarProps>((props, ref) => {
       light.shadow.mapSize.height = 512 * 8 // default
       light.shadow.camera.near = 0.0001 // default
       light.shadow.camera.far = 15_000 // default
+      set({
+        pointLight: light,
+      })
     }
   }, [light])
 
@@ -59,7 +63,7 @@ export const Star = React.forwardRef<Mesh, StarProps>((props, ref) => {
         intensity={lightIntensity}
         decay={1}
         castShadow
-        name={`${name}-light`}
+        name={`point-${name}-light`}
       />
       <sphereGeometry args={[radius, 32, 16]}></sphereGeometry>
       <meshStandardMaterial

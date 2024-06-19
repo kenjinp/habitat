@@ -13,13 +13,12 @@
   "files": [
     "dist"
   ],
-  "dependencies": {},
   "keywords": [
     "game",
     "procedural generation",
     "machine learning"
   ],
   "devDependencies": {
-    "typescript": "^4.7.4"
+    "typescript": "^5.4.5"
   }
 }

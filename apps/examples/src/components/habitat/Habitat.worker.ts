@@ -2,15 +2,23 @@ import {
   ChunkGenerator3Initializer,
   ColorArrayWithAlpha,
   createThreadedRingWorldWorker,
-  DEFAULT_NOISE_PARAMS,
   Noise,
   NOISE_TYPES,
   remap,
 } from "@hello-worlds/planets"
-import { Color, Vector3 } from "three"
+import { Color } from "three"
 import { interpolateColor } from "../../hooks/use-image/image"
 import { biomeColorSplineMap, BIOMES } from "./Habitat.biomes"
 import { length, radius } from "./Habitat.dimensions"
+
+import FastNoiseLite from "fastnoise-lite"
+
+let noise = new FastNoiseLite()
+noise.SetNoiseType(FastNoiseLite.NoiseType.OpenSimplex2)
+noise.SetFractalType(FastNoiseLite.FractalType.FBM)
+noise.SetFractalOctaves(4)
+noise.SetSeed(12345)
+noise.SetFrequency(0.08)
 
 export type ThreadParams = {
   seed: string
@@ -24,60 +32,14 @@ function easeInOutCubic(x: number): number {
 const heightGenerator: ChunkGenerator3Initializer<ThreadParams, number> = ({
   data: { seed, heightmap },
 }) => {
-  const warp = new Noise({
-    ...DEFAULT_NOISE_PARAMS,
-    octaves: 2,
-    seed,
-    height: 1000,
-    scale: 3000,
-    noiseType: NOISE_TYPES.BILLOWING,
-  })
-
-  const mountains = new Noise({
-    ...DEFAULT_NOISE_PARAMS,
-    seed,
-    height: 1500,
-    scale: 3000,
-  })
-
-  const readFromImageData = (
-    x: number,
-    y: number,
-    imageWidth: number,
-    input: Vector3,
-  ) => {
-    // if (y < 0 || y > imageWidth) {
-    //   throw new Error(
-    //     `Range error y: ${y} imageWidth: ${imageWidth} inputy: ${input.y}`,
-    //   )
-    // }
-    // if (x < 0 || x > imageWidth) {
-    //   throw new Error(
-    //     `Range error x: ${x} imageWidth: ${imageWidth} inputx: ${input.x}`,
-    //   )
-    // }
-    const index = Math.ceil((x + y * imageWidth) * 4)
-    const r = heightmap[index]
-    if (r === undefined) {
-      console.warn(`Range error: ${index} ${x} ${y} ${imageWidth}`)
-      return 0
-      // throw new Error(`Range error: ${index} ${x} ${y} ${imageWidth}`)
-    }
-    return r
-  }
-
   const imageWidth = 1024
+  const maxHeight = 1500
+  const minHeight = -5
 
-  return ({ input, offset, xy, width, resolution }) => {
+  return ({ input }) => {
     if (!heightmap) {
       return -10
     }
-    const effectiveResolution = resolution
-    // xy.add(offsetVec2.set(offset.x, offset.y))
-    // const w = warp.get(input.x, input.y, input.z)
-    // const m = mountains.get(input.x + w, input.y + w, input.z + w)
-
-    // return m
 
     // Calculate the angle theta around the Y-axis
     const theta = Math.atan2(input.x, input.z)
@@ -86,14 +48,13 @@ const heightGenerator: ChunkGenerator3Initializer<ThreadParams, number> = ({
     let u = (theta / (2 * Math.PI) + 0.5) * (2 * Math.PI * radius)
     u = u / (2 * Math.PI * radius)
 
-    let imageX = Math.floor(remap(u, 0, 1, 0, imageWidth))
-    let imageY = Math.floor(
-      remap(input.y, -length / 2, length / 2, 0, imageWidth),
-    )
+    let imageX = remap(u, 0, 1, 0, imageWidth)
+    let imageY = remap(input.y, -length / 2, length / 2, 0, imageWidth)
 
     let h = interpolateColor(imageX, imageY, imageWidth, heightmap, true)
+
     h = remap(h, 0, 255, 0, 1)
-    h = remap(h, 0, 1, -5, 1000)
+    h = remap(h, 0, 1, minHeight, maxHeight)
     return h
   }
 }

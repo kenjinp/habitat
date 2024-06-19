@@ -76,23 +76,21 @@ export default function Habitat() {
     }
   }, [heightmap.result])
 
-  console.log({ heightmap })
+  // useFrame(({ clock }) => {
+  //   function rotationsPerSecond(radius: number, targetGravity: number): number {
+  //     const g = 9.81 // Earth gravity in m/s²
+  //     const angularVelocity = Math.sqrt((targetGravity * g) / radius)
+  //     const rotationsPerSecond = angularVelocity / (2 * Math.PI)
+  //     return rotationsPerSecond
+  //   }
+  //   const delta = clock.getDelta()
 
-  useFrame(({ clock }) => {
-    function rotationsPerSecond(radius: number, targetGravity: number): number {
-      const g = 9.81 // Earth gravity in m/s²
-      const angularVelocity = Math.sqrt((targetGravity * g) / radius)
-      const rotationsPerSecond = angularVelocity / (2 * Math.PI)
-      return rotationsPerSecond
-    }
-    const delta = clock.getDelta()
+  //   const targetGravity = 0.8
 
-    const targetGravity = 0.8
-
-    // rotate the ringWorld
-    // habitatGroup.current!.rotation.y +=
-    //   rotationsPerSecond(radius, targetGravity) * (delta * 100)
-  })
+  //   // rotate the ringWorld
+  //   // habitatGroup.current!.rotation.y +=
+  //   //   rotationsPerSecond(radius, targetGravity) * (delta * 100)
+  // })
 
   return (
     <group
@@ -115,8 +113,8 @@ export default function Habitat() {
         skirtDepth={10}
       >
         <Helion />
-        {/* <RandomCubesInsideCylinder numCubes={100} size={500} />
-        <RandomCubesInsideCylinder numCubes={500} size={100} /> */}
+        <RandomCubesInsideCylinder numCubes={100} size={500} />
+        <RandomCubesInsideCylinder numCubes={500} size={100} />
         <meshStandardMaterial vertexColors side={BackSide} />
         {/* <GodCamera /> */}
         <OrbitControls />
