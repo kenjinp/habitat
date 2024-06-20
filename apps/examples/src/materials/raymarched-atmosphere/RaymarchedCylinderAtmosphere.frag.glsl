@@ -119,9 +119,9 @@ void main() {
 
 
   // Intersection stuff
-  vec3 cylinderPosition = vec3(0.0, -15000.0/2.0, 0.0);
   float cylinderRadius = uCylinder.radius;
   float cylinderHeight = uCylinder.height;
+  vec3 cylinderPosition = vec3(0.0, -cylinderHeight/2.0, 0.0);
   vec3 accum = vec3(0.0);
   vec2 intersection = intersectRayCylinder(Translate( ray.origin, cylinderPosition), ray.direction, cylinderRadius, cylinderHeight);
 
@@ -165,7 +165,7 @@ void main() {
     // simple height attenuation
     float height = length(currentPosition - vec3(0.0, currentPosition.y, 0.0));
     float height_factor = clamp(remap(height, 0.0, cylinderRadius * 2.0, 0.0, 1.0), 0.0, 1.0);
-    height_factor = height_factor * height_factor;
+    height_factor = height_factor * height_factor * height_factor;
 
     // shadow stuff
     vec4 shadowWorldPosition = vec4(currentPosition, 1.0) + vec4( shadowWorldNormal * uPointLightShadow.shadowNormalBias, 0 ); 

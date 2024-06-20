@@ -1,15 +1,15 @@
 import { RingWorld as HelloRingWorld } from "@hello-worlds/planets"
 import { RingWorld } from "@hello-worlds/react"
 import { useFrame, useThree } from "@react-three/fiber"
-import { BackSide, Group, MathUtils, Mesh, Vector3 } from "three"
+import { DoubleSide, Group, MathUtils, Mesh, Vector3 } from "three"
 
 import { OrbitControls } from "@react-three/drei"
+import { useControls } from "leva"
 import { useMemo, useRef, useState } from "react"
 import { useImageData } from "../../hooks/use-image/use-image"
 import { length, radius } from "./Habitat.dimensions"
 import Worker from "./Habitat.worker?worker"
 import { Helion } from "./helion/Helion"
-import Water from "./water/Water"
 
 const worker = () => new Worker()
 
@@ -68,13 +68,19 @@ export default function Habitat() {
   const camera = useThree(state => state.camera)
   const planet = useRef<HelloRingWorld<HabitatData>>(null)
   const heightmap = useImageData("large-terrain.png")
+  const { minHeight, maxHeight } = useControls({
+    minHeight: { value: -5, min: -100, max: 10 },
+    maxHeight: { value: 1_500, min: 100, max: 5_000 },
+  })
 
   const data = useMemo(() => {
     return {
-      seed: "this is a random seed",
+      seed: "hello-tube",
       heightmap: heightmap.result,
+      minHeight,
+      maxHeight,
     }
-  }, [heightmap.result])
+  }, [heightmap.result, minHeight, maxHeight])
 
   // useFrame(({ clock }) => {
   //   function rotationsPerSecond(radius: number, targetGravity: number): number {
@@ -115,11 +121,11 @@ export default function Habitat() {
         <Helion />
         <RandomCubesInsideCylinder numCubes={100} size={500} />
         <RandomCubesInsideCylinder numCubes={500} size={100} />
-        <meshStandardMaterial vertexColors side={BackSide} />
+        <meshStandardMaterial vertexColors side={DoubleSide} />
         {/* <GodCamera /> */}
         <OrbitControls />
       </RingWorld>
-      <Water />
+      {/* <Water /> */}
     </group>
   )
 }

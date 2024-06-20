@@ -22,6 +22,8 @@ noise.SetFrequency(0.08)
 
 export type ThreadParams = {
   seed: string
+  minHeight: number
+  maxHeight: number
   heightmap: Uint8Array
 }
 
@@ -30,16 +32,17 @@ function easeInOutCubic(x: number): number {
 }
 
 const heightGenerator: ChunkGenerator3Initializer<ThreadParams, number> = ({
-  data: { seed, heightmap },
+  data: { seed, heightmap, maxHeight, minHeight },
 }) => {
   const imageWidth = 1024
-  const maxHeight = 1500
-  const minHeight = -5
 
   return ({ input }) => {
     if (!heightmap) {
       return -10
     }
+
+    const repeatX = 1
+    const repeatY = 1
 
     // Calculate the angle theta around the Y-axis
     const theta = Math.atan2(input.x, input.z)
@@ -48,8 +51,19 @@ const heightGenerator: ChunkGenerator3Initializer<ThreadParams, number> = ({
     let u = (theta / (2 * Math.PI) + 0.5) * (2 * Math.PI * radius)
     u = u / (2 * Math.PI * radius)
 
+    // Convert input.y to the V coordinate (normalized to [0, 1])
+    let v = remap(input.y, -length / 2, length / 2, 0, 1)
+
+    // Repeat the U and V coordinates based on repeatX and repeatY values
+    u = (u * repeatX) % 1 // Wrap around to repeatX times
+    if (u < 0) u += 1 // Ensure u is positive
+
+    v = (v * repeatY) % 1 // Wrap around to repeatY times
+    if (v < 0) v += 1 // Ensure v is positive
+
+    // Map U and V to image coordinates
     let imageX = remap(u, 0, 1, 0, imageWidth)
-    let imageY = remap(input.y, -length / 2, length / 2, 0, imageWidth)
+    let imageY = remap(v, 0, 1, 0, imageWidth)
 
     let h = interpolateColor(imageX, imageY, imageWidth, heightmap, true)
 

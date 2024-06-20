@@ -2,8 +2,8 @@ import { remap } from "@hello-worlds/planets"
 import { useFrame, useThree } from "@react-three/fiber"
 import * as React from "react"
 import { MathUtils, Vector3 } from "three"
+import { FlyCamera as FPC } from "../fly-camera/FlyCamera"
 import { FirstPersonControls } from "../fly-camera/FlyCamera.component"
-import { FlyCamera as FPC } from "../fly-camera/FlyCamera.old"
 
 const calculateDistanceToCylinderWall = (pos: Vector3) => {
   const distance = Math.sqrt(pos.x ** 2 + pos.z ** 2)

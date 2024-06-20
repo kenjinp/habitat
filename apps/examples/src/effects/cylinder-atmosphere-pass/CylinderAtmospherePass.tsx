@@ -6,8 +6,8 @@ import { DepthCopyPass, ShaderPass } from "postprocessing"
 import * as React from "react"
 import { PointLight, Scene, Vector3 } from "three"
 import { length, radius } from "../../components/habitat/Habitat.dimensions"
-import BicubicUpscaleMaterial from "../../components/materials/bicubic-upscale-material/BicubicUpscaleMaterial"
-import RaymarchedCylinderAtmosphere from "../../components/materials/raymarched-atmosphere/RaymarchedCylinderAtmosphere"
+import BicubicUpscaleMaterial from "../../materials/bicubic-upscale-material/BicubicUpscaleMaterial"
+import RaymarchedCylinderAtmosphere from "../../materials/raymarched-atmosphere/RaymarchedCylinderAtmosphere"
 import { DownsamplePass } from "../downsample-pass/DownsamplePass"
 
 export default function CylinderAtmospherePass() {
