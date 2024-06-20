@@ -1,10 +1,10 @@
 import { RingWorld } from "@hello-worlds/react"
 import { useThree } from "@react-three/fiber"
-import { BackSide, Color, Vector3 } from "three"
+import { FrontSide, Vector3 } from "three"
 
 import { useMemo } from "react"
 import { length, radius } from "../Habitat.dimensions"
-import Worker from "./Water.worker?worker"
+import Worker from "./Hull.worker?worker"
 
 const worker = () => new Worker()
 
@@ -12,7 +12,7 @@ export interface HabitatData {
   seed: string
 }
 
-export default function Water() {
+export default function Hull() {
   const camera = useThree(state => state.camera)
 
   const data = useMemo(() => {
@@ -25,19 +25,16 @@ export default function Water() {
     <group>
       <RingWorld
         position={new Vector3()}
-        length={length}
-        radius={radius}
-        // minCellSize={64}
-        // minCellResolution={8}
+        length={length + 200}
+        radius={radius + 100}
         minCellSize={32}
-        minCellResolution={32}
+        minCellResolution={8}
         lodOrigin={camera.position}
         worker={worker}
         data={data}
-        inverted
-        skirtDepth={0.000000000000001}
+        skirtDepth={100}
       >
-        <meshStandardMaterial color={new Color(0x017b92)} side={BackSide} />
+        <meshStandardMaterial side={FrontSide} color={"grey"} />
       </RingWorld>
     </group>
   )

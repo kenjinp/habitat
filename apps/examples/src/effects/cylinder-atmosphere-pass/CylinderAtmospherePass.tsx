@@ -37,6 +37,7 @@ export const CylinderAtmospherePassInner: React.FC<{
     useJitter: false,
   })
   const blueNoiseTexture = useTexture("/blue-noise.png")
+  const noiseTexture = useTexture("/noise.png")
   const pp = React.useContext(EffectComposerContext)
   const composer = pp.composer
 
@@ -52,6 +53,7 @@ export const CylinderAtmospherePassInner: React.FC<{
       camera,
       pointLight as PointLight,
       blueNoiseTexture,
+      noiseTexture,
       copyDepthPass.texture,
       {
         radius: radius,

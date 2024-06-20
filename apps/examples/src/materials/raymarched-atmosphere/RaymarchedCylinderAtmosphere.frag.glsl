@@ -1,4 +1,4 @@
-#include "../glsl/common.glsl"
+#include "../glsl/common.glsl";
 #include "./Cylinder.glsl";
 #include "./PointLightShadow.glsl";
 
@@ -13,6 +13,7 @@ uniform sampler2D uBlueNoise;
 uniform bool uUseJitter;
 uniform int uMaxSteps;
 uniform Cylinder uCylinder;
+#include "./Noise.glsl";
 
 uniform sampler2D uPointShadowMap;
 uniform mat4 uPointLightShadowMatrix;
@@ -96,6 +97,10 @@ float remap( in float value, in float x1, in float y1, in float x2, in float y2)
   return ((value - x1) * (y2 - x2)) / (y1 - x1) + x2;
 }
 
+float cloudScene(vec3 position) {
+  return fbm(position);
+}
+
 void main() {
   vec4 sceneColor = vec4(0.0, 0.0, 0.0, 1.0);
 
@@ -122,7 +127,7 @@ void main() {
   float cylinderRadius = uCylinder.radius;
   float cylinderHeight = uCylinder.height;
   vec3 cylinderPosition = vec3(0.0, -cylinderHeight/2.0, 0.0);
-  vec3 accum = vec3(0.0);
+  vec4 accum = vec4(0.0);
   vec2 intersection = intersectRayCylinder(Translate( ray.origin, cylinderPosition), ray.direction, cylinderRadius, cylinderHeight);
 
   float intersectionNear = intersection.x;
@@ -159,6 +164,9 @@ void main() {
 
   vec3 shadowWorldNormal = inverseTransformDirection(sunDir, viewMatrix );
 
+  float depth = 0.0;
+  depth += distancePerStep;
+
   for(int i = 0; i < numSteps; ++i) {
     vec3 currentPosition = begin.origin + ray.direction * (distancePerStep * float(i)) * jitter;
 
@@ -191,12 +199,28 @@ void main() {
 
     bool inShadow = shadowDepth >= 1.0;
     if (!inShadow) {
-          accum += sky * fogIntensity;
-          accum += sun * fogIntensity;
+          accum.xyz += sky * fogIntensity;
+          accum.xyz += sun * fogIntensity;
     }
+
+    // cloud stuff
+    float density = cloudScene(currentPosition);
+     // We only draw the density if it's greater than 0
+    // if (density > 0.0) {
+    //   // Directional derivative
+    //   // For fast diffuse lighting
+    //   float diffuse = clamp((cloudScene(currentPosition) - cloudScene(currentPosition + 0.3 * sunDir))/0.3, 0.0, 1.0 );
+    //   vec3 lin = vec3(0.60,0.60,0.75) * 1.1 + 0.8 * vec3(1.0,0.6,0.3) * diffuse;
+    //   vec4 color = vec4(mix(vec3(1.0,1.0,1.0), vec3(0.0, 0.0, 0.0), density), density );
+    //   color.rgb *= lin;
+    //   color.rgb *= color.a;
+    //   accum += color*(1.0-accum.a);
+    // }
+
+    depth += distancePerStep;
   }
 
-  sceneColor = vec4(accum, 1.0);
+  sceneColor = accum;
 
   gl_FragColor = sceneColor;
 }

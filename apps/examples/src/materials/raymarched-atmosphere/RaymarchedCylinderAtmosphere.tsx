@@ -24,6 +24,7 @@ class RaymarchedCylinderAtmosphere extends ShaderMaterial {
     camera: Camera,
     pointLight: PointLight,
     blueNoiseTexture: Texture,
+    noiseTexture: Texture,
     depthTexture: Texture,
     public cylinder: Cylinder,
     public maxSteps: number = 8,
@@ -71,6 +72,9 @@ class RaymarchedCylinderAtmosphere extends ShaderMaterial {
         },
         uBlueNoise: {
           value: blueNoiseTexture,
+        },
+        uNoise: {
+          value: noiseTexture,
         },
         uMaxSteps: { value: maxSteps },
         uUseJitter: new Uniform(useJitter),

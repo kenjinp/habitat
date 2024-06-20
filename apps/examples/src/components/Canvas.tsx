@@ -59,7 +59,7 @@ export const Canvas: React.FC<
         {showPerf && <Perf />}
         <Post>{children}</Post>
         <CameraDebug />
-        <axesHelper args={[2000]} />
+        {/* <axesHelper args={[2000]} /> */}
       </Suspense>
     </R3fCanvas>
   )

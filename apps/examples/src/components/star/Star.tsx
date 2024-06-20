@@ -9,6 +9,7 @@ import {
   PointLight,
   RepeatWrapping,
 } from "three"
+import { length } from "../habitat/Habitat.dimensions"
 
 export interface StarProps {
   position: [number, number, number]
@@ -42,11 +43,10 @@ export const Star = React.forwardRef<Mesh, StarProps>((props, ref) => {
 
   React.useEffect(() => {
     if (light) {
-      console.log("lighttttt", light)
-      light.shadow.mapSize.width = 512 * 8 // default
-      light.shadow.mapSize.height = 512 * 8 // default
+      light.shadow.mapSize.width = 1024 * 4 // default
+      light.shadow.mapSize.height = 1024 * 4 // default
       light.shadow.camera.near = 0.0001 // default
-      light.shadow.camera.far = 15_000 // default
+      light.shadow.camera.far = length
       set({
         pointLight: light,
       })

@@ -1,7 +1,7 @@
 import { RingWorld as HelloRingWorld } from "@hello-worlds/planets"
 import { RingWorld } from "@hello-worlds/react"
 import { useFrame, useThree } from "@react-three/fiber"
-import { DoubleSide, Group, MathUtils, Mesh, Vector3 } from "three"
+import { BackSide, Group, MathUtils, Mesh, Vector3 } from "three"
 
 import { OrbitControls } from "@react-three/drei"
 import { useControls } from "leva"
@@ -10,6 +10,8 @@ import { useImageData } from "../../hooks/use-image/use-image"
 import { length, radius } from "./Habitat.dimensions"
 import Worker from "./Habitat.worker?worker"
 import { Helion } from "./helion/Helion"
+import Hull from "./hull/Hull"
+import Water from "./water/Water"
 
 const worker = () => new Worker()
 
@@ -42,6 +44,55 @@ const SingleRandomCube: React.FC<{ size: number; position: Vector3 }> = ({
       <boxGeometry args={[1, 1, 1]} />
       <meshStandardMaterial color="red" />
     </mesh>
+  )
+}
+
+const SupportStructure: React.FC = () => {
+  const r = 2
+  const length = radius
+  const offsetSideA = new Vector3(0, length / 2, 0)
+  const offsetSideB = new Vector3(0, -length / 2, 0)
+  return (
+    <group
+      // rotate around x axis 90 degrees to align with the x-z plane
+      rotation={[Math.PI / 2, 0, 0]}
+    >
+      <mesh position={offsetSideA} castShadow receiveShadow>
+        <cylinderGeometry args={[r * 10, r, length, 64]} />
+        <meshStandardMaterial color="grey" />
+      </mesh>
+      <mesh position={offsetSideB} castShadow receiveShadow>
+        <cylinderGeometry args={[r, r * 10, length, 64]} />
+        <meshStandardMaterial color="grey" />
+      </mesh>
+    </group>
+  )
+}
+
+const RandomSupportStructures: React.FC = () => {
+  const numberStructures = 8
+  return (
+    <group>
+      {Array.from({ length: numberStructures }).map((_, i) => {
+        const offsetSteps = length / numberStructures
+        const offset = i * offsetSteps
+
+        const position = new Vector3(
+          0,
+          MathUtils.randFloat(offset, offset + offsetSteps) - length / 2,
+          0,
+        )
+        return (
+          <group
+            position={position}
+            //rotate randomly around the global y-axis
+            rotation={[0, MathUtils.randFloat(0, Math.PI * 2), 0]}
+          >
+            <SupportStructure key={i} />
+          </group>
+        )
+      })}
+    </group>
   )
 }
 
@@ -119,13 +170,15 @@ export default function Habitat() {
         skirtDepth={10}
       >
         <Helion />
-        <RandomCubesInsideCylinder numCubes={100} size={500} />
-        <RandomCubesInsideCylinder numCubes={500} size={100} />
-        <meshStandardMaterial vertexColors side={DoubleSide} />
+        {/* <RandomCubesInsideCylinder numCubes={100} size={500} />
+        <RandomCubesInsideCylinder numCubes={500} size={100} /> */}
+        <meshStandardMaterial vertexColors side={BackSide} />
         {/* <GodCamera /> */}
         <OrbitControls />
       </RingWorld>
-      {/* <Water /> */}
+      <RandomSupportStructures />
+      <Hull />
+      <Water />
     </group>
   )
 }
